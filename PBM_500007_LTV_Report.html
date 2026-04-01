@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PBM 500007 프로모션 LTV 분석 보고서</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #e0e7ff;
+      --success: #10b981;
+      --success-light: #d1fae5;
+      --warning: #f59e0b;
+      --warning-light: #fef3c7;
+      --danger: #ef4444;
+      --danger-light: #fee2e2;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-400: #9ca3af;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      line-height: 1.6;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      color: white;
+      padding: 48px 40px 40px;
+    }
+    .header-meta {
+      font-size: 13px;
+      opacity: 0.75;
+      margin-bottom: 10px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .header p {
+      font-size: 15px;
+      opacity: 0.85;
+    }
+    .header-badges {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .badge {
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* ── Section ── */
+    .section {
+      margin-bottom: 48px;
+    }
+    .section-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin-bottom: 6px;
+    }
+    .section-heading {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--gray-200);
+    }
+
+    /* ── KPI Cards ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .kpi-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--gray-200);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .kpi-card.highlight {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+    .kpi-card.success {
+      background: var(--success);
+      border-color: var(--success);
+      color: white;
+    }
+    .kpi-label {
+      font-size: 12px;
+      color: var(--gray-400);
+      margin-bottom: 6px;
+    }
+    .kpi-card.highlight .kpi-label,
+    .kpi-card.success .kpi-label { color: rgba(255,255,255,0.75); }
+    .kpi-value {
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+    .kpi-sub {
+      font-size: 12px;
+      color: var(--gray-400);
+      margin-top: 4px;
+    }
+    .kpi-card.highlight .kpi-sub,
+    .kpi-card.success .kpi-sub { color: rgba(255,255,255,0.7); }
+
+    /* ── Tables ── */
+    .table-wrap {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--gray-200);
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 24px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    thead tr {
+      background: var(--gray-100);
+    }
+    thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: var(--gray-600);
+      font-size: 13px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--gray-100);
+      transition: background 0.15s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--gray-50); }
+    tbody td {
+      padding: 12px 16px;
+      color: var(--gray-700);
+    }
+    .td-right { text-align: right; font-variant-numeric: tabular-nums; }
+    .td-mono { font-family: 'SF Mono', 'Fira Mono', monospace; }
+    .row-total td {
+      font-weight: 700;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 15px;
+    }
+    .row-cost td {
+      color: var(--danger);
+      font-weight: 600;
+    }
+    .row-net td {
+      font-weight: 700;
+      background: var(--success-light);
+      color: #047857;
+      font-size: 15px;
+    }
+    .row-highlight td {
+      background: var(--warning-light);
+      font-weight: 600;
+    }
+
+    /* ── Pill tags ── */
+    .pill {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .pill-blue { background: var(--primary-light); color: var(--primary); }
+    .pill-green { background: var(--success-light); color: #047857; }
+    .pill-yellow { background: var(--warning-light); color: #92400e; }
+    .pill-red { background: var(--danger-light); color: #991b1b; }
+
+    /* ── Callout boxes ── */
+    .callout {
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 14px;
+    }
+    .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .callout-body { line-height: 1.6; }
+    .callout-body strong { display: block; margin-bottom: 4px; }
+    .callout.info { background: var(--primary-light); color: #1e1b4b; }
+    .callout.warning { background: var(--warning-light); color: #78350f; }
+    .callout.success { background: var(--success-light); color: #064e3b; }
+    .callout.danger { background: var(--danger-light); color: #7f1d1d; }
+
+    /* ── Retention chart ── */
+    .retention-chart {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--gray-200);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .retention-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 20px;
+      height: 140px;
+      margin-bottom: 8px;
+    }
+    .ret-bar-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+    }
+    .ret-bar-val {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .ret-bar {
+      width: 100%;
+      background: linear-gradient(180deg, #818cf8, var(--primary));
+      border-radius: 6px 6px 0 0;
+      position: relative;
+    }
+    .ret-bar-label {
+      font-size: 12px;
+      color: var(--gray-400);
+      font-weight: 600;
+    }
+
+    /* ── Revenue waterfall ── */
+    .waterfall {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--gray-200);
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .wf-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .wf-label {
+      font-size: 13px;
+      color: var(--gray-600);
+      width: 120px;
+      flex-shrink: 0;
+    }
+    .wf-bar-bg {
+      flex: 1;
+      background: var(--gray-100);
+      border-radius: 4px;
+      height: 24px;
+      overflow: hidden;
+    }
+    .wf-bar {
+      height: 100%;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      padding-left: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: white;
+      white-space: nowrap;
+    }
+    .wf-val {
+      font-size: 14px;
+      font-weight: 700;
+      width: 80px;
+      text-align: right;
+      color: var(--gray-800);
+      flex-shrink: 0;
+    }
+
+    /* ── Scenario comparison ── */
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .scenario-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+    .scenario-card.current {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    .scenario-label { font-size: 12px; color: var(--gray-500); margin-bottom: 4px; }
+    .scenario-card.current .scenario-label { color: var(--primary); }
+    .scenario-reward {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--gray-800);
+      margin-bottom: 2px;
+    }
+    .scenario-card.current .scenario-reward { color: var(--primary); }
+    .scenario-cost { font-size: 12px; color: var(--gray-400); margin-bottom: 8px; }
+    .scenario-ltv {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--success);
+    }
+    .scenario-change {
+      font-size: 11px;
+      margin-top: 2px;
+    }
+    .neg { color: var(--danger); }
+    .pos { color: var(--success); }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: var(--gray-200);
+      margin: 32px 0;
+    }
+
+    /* ── Two-col ── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 600px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    /* ── Footnote ── */
+    .footnote {
+      font-size: 12px;
+      color: var(--gray-400);
+      margin-top: 8px;
+    }
+
+    /* ── Recommendation box ── */
+    .rec-box {
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+      border: 2px solid #86efac;
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-top: 8px;
+    }
+    .rec-box h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #14532d;
+      margin-bottom: 12px;
+    }
+    .rec-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .rec-list li {
+      display: flex;
+      gap: 10px;
+      font-size: 14px;
+      color: #166534;
+      align-items: flex-start;
+    }
+    .rec-list li::before {
+      content: "✓";
+      font-weight: 700;
+      flex-shrink: 0;
+      color: var(--success);
+    }
+
+    .promo-structure {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .day-chip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 10px;
+      padding: 10px 14px;
+      min-width: 64px;
+    }
+    .day-chip.d7 {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+    .day-chip.d3 {
+      border-color: var(--warning);
+      background: var(--warning-light);
+    }
+    .day-num { font-size: 11px; color: var(--gray-400); }
+    .day-reward { font-size: 16px; font-weight: 700; color: var(--gray-800); }
+    .day-chip.d7 .day-reward { color: var(--primary); }
+    .day-chip.d3 .day-reward { color: #92400e; }
+
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--gray-400);
+      padding: 24px;
+      border-top: 1px solid var(--gray-200);
+      margin-top: 60px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ────────────────── HEADER ────────────────── -->
+<div class="header">
+  <div class="header-meta">Puzzle Block Master · Toss Platform</div>
+  <h1>프로모션 500007 LTV 분석 보고서</h1>
+  <p>NRU 코호트 기반 광고 수익 LTV 계산 및 보상 설계 검토</p>
+  <div class="header-badges">
+    <span class="badge">분석 기준일: 2026-03-31</span>
+    <span class="badge">코호트 D0: 2026-02-10 ~ 02-28</span>
+    <span class="badge">BQ Table: puzzle_block_master_toss</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ════════════════════════════════════════
+       PART 1 · LTV CALCULATION
+  ════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">Part 1</div>
+    <div class="section-heading">LTV 계산 결과</div>
+
+    <!-- KPI 카드 -->
+    <div class="kpi-grid">
+      <div class="kpi-card highlight">
+        <div class="kpi-label">순 LTV (1인당)</div>
+        <div class="kpi-value">208.32원</div>
+        <div class="kpi-sub">Gross 226.57원 – 비용 18.25원</div>
+      </div>
+      <div class="kpi-card success">
+        <div class="kpi-label">코호트 순 LTV (7,890명)</div>
+        <div class="kpi-value">1,643,645원</div>
+        <div class="kpi-sub">7,890 × 208.32원</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">분석 대상 NRU</div>
+        <div class="kpi-value">7,890명</div>
+        <div class="kpi-sub">Method B (BQ 기준)</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">프로모션 총 지급</div>
+        <div class="kpi-value">296,325원</div>
+        <div class="kpi-sub">평균 18.25원/참여자</div>
+      </div>
+    </div>
+
+    <!-- 리텐션 -->
+    <h3 style="font-size:15px;font-weight:700;color:var(--gray-700);margin-bottom:16px;">📈 리텐션 앵커 (Method B · BQ 실측)</h3>
+    <div class="retention-chart">
+      <div class="retention-bars">
+        <div class="ret-bar-wrap">
+          <div class="ret-bar-val">100%</div>
+          <div class="ret-bar" style="height:120px;"></div>
+          <div class="ret-bar-label">D0</div>
+        </div>
+        <div class="ret-bar-wrap">
+          <div class="ret-bar-val">12.22%</div>
+          <div class="ret-bar" style="height:14.7px;"></div>
+          <div class="ret-bar-label">D1</div>
+        </div>
+        <div class="ret-bar-wrap">
+          <div class="ret-bar-val">6.22%</div>
+          <div class="ret-bar" style="height:7.5px;"></div>
+          <div class="ret-bar-label">D7</div>
+        </div>
+        <div class="ret-bar-wrap">
+          <div class="ret-bar-val">5.15%</div>
+          <div class="ret-bar" style="height:6.2px;"></div>
+          <div class="ret-bar-label">D14</div>
+        </div>
+        <div class="ret-bar-wrap">
+          <div class="ret-bar-val">3.64%</div>
+          <div class="ret-bar" style="height:4.4px;"></div>
+          <div class="ret-bar-label">D28</div>
+        </div>
+      </div>
+      <div class="footnote">D1~D28: 앵커 간 선형 보간 / D28 이후: 지수 감쇠 d = 0.97546/day</div>
+    </div>
+
+    <!-- 수익 구간 워터폴 -->
+    <h3 style="font-size:15px;font-weight:700;color:var(--gray-700);margin-bottom:16px;">💰 구간별 1인당 수익 (Gross)</h3>
+    <div class="waterfall">
+      <div class="wf-row">
+        <div class="wf-label">D0 (Excel 실측)</div>
+        <div class="wf-bar-bg">
+          <div class="wf-bar" style="width:5.78%;background:#818cf8;">13.09원</div>
+        </div>
+        <div class="wf-val">13.094원</div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">D1 ~ D7</div>
+        <div class="wf-bar-bg">
+          <div class="wf-bar" style="width:21.6%;background:#6366f1;">48.86원</div>
+        </div>
+        <div class="wf-val">48.858원</div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">D8 ~ D14</div>
+        <div class="wf-bar-bg">
+          <div class="wf-bar" style="width:11.2%;background:#4f46e5;">25.39원</div>
+        </div>
+        <div class="wf-val">25.389원</div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">D15 ~ D28</div>
+        <div class="wf-bar-bg">
+          <div class="wf-bar" style="width:17.0%;background:#4338ca;">38.51원</div>
+        </div>
+        <div class="wf-val">38.505원</div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">D29 ~ D35</div>
+        <div class="wf-bar-bg">
+          <div class="wf-bar" style="width:6.23%;background:#3730a3;">14.11원</div>
+        </div>
+        <div class="wf-val">14.110원</div>
+      </div>
+      <div class="wf-row">
+        <div class="wf-label">D36~ 무한 테일</div>
+        <div class="wf-bar-bg">
+          <div class="wf-bar" style="width:38.2%;background:linear-gradient(90deg,#3730a3,#7c3aed);">86.61원 (38.2%)</div>
+        </div>
+        <div class="wf-val">86.610원</div>
+      </div>
+    </div>
+
+    <!-- 수익 테이블 -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>구간</th>
+            <th>계산 방식</th>
+            <th class="td-right">1인당 수익</th>
+            <th class="td-right">비중</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>D0</td>
+            <td>Excel 실측 (NRU 평균 0.471 RV, 1.879 IT)</td>
+            <td class="td-right td-mono">13.094원</td>
+            <td class="td-right"><span class="pill pill-blue">5.8%</span></td>
+          </tr>
+          <tr>
+            <td>D1 ~ D7</td>
+            <td>BQ 실측 ad views × 날짜별 실측 eCPM</td>
+            <td class="td-right td-mono">48.858원</td>
+            <td class="td-right"><span class="pill pill-blue">21.6%</span></td>
+          </tr>
+          <tr>
+            <td>D8 ~ D14</td>
+            <td>BQ 실측 ad views × 날짜별 실측 eCPM</td>
+            <td class="td-right td-mono">25.389원</td>
+            <td class="td-right"><span class="pill pill-blue">11.2%</span></td>
+          </tr>
+          <tr>
+            <td>D15 ~ D28</td>
+            <td>BQ 실측 ad views × 날짜별 실측 eCPM</td>
+            <td class="td-right td-mono">38.505원</td>
+            <td class="td-right"><span class="pill pill-blue">17.0%</span></td>
+          </tr>
+          <tr>
+            <td>D29 ~ D35</td>
+            <td>BQ 실측 ad views × 날짜별 실측 eCPM</td>
+            <td class="td-right td-mono">14.110원</td>
+            <td class="td-right"><span class="pill pill-blue">6.2%</span></td>
+          </tr>
+          <tr>
+            <td>D36~ ∞</td>
+            <td>지수 감쇠 × D29-35 평균 ad views × 3/29-30 eCPM</td>
+            <td class="td-right td-mono">86.610원</td>
+            <td class="td-right"><span class="pill pill-yellow">38.2%</span></td>
+          </tr>
+          <tr class="row-total">
+            <td colspan="2">Gross LTV 합계</td>
+            <td class="td-right td-mono">226.565원</td>
+            <td class="td-right">100%</td>
+          </tr>
+          <tr class="row-cost">
+            <td colspan="2">프로모션 비용 (296,325원 ÷ 16,236명)</td>
+            <td class="td-right td-mono">-18.25원</td>
+            <td class="td-right">–</td>
+          </tr>
+          <tr class="row-net">
+            <td colspan="2">순 LTV</td>
+            <td class="td-right td-mono">208.32원</td>
+            <td class="td-right">–</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- D36+ 가정 -->
+    <div class="callout info">
+      <div class="callout-icon">ℹ️</div>
+      <div class="callout-body">
+        <strong>D36+ 무한 테일 가정</strong>
+        avg_rv = 3.8391회/day, avg_it = 8.8864회/day (D29-35 평균) ·
+        RV eCPM = 6,818원, IT eCPM = 5,072원 (3/29-30 평균 고정) ·
+        무한합: a ÷ (1 − d), d = 0.97546
+      </div>
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ════════════════════════════════════════
+       PART 2 · NRU DEFINITION
+  ════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">Part 1 · 부록</div>
+    <div class="section-heading">NRU 정의</div>
+
+    <div class="callout success">
+      <div class="callout-icon">✅</div>
+      <div class="callout-body">
+        <strong>MIN(log_date) 기준 채택 — 7,890명</strong>
+        프로모션 보상일 = 해당 유저의 BQ 전체 최초 로그 날짜인 케이스만 추출.
+        처음 게임을 플레이한 날 프로모션 보상을 받은 유저를 NRU로 정의함.
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ════════════════════════════════════════
+       PART 1 · 부록 2 · NRU + RU 합산 순수익
+  ════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">Part 1 · 부록 2</div>
+    <div class="section-heading">NRU + RU 합산 순수익</div>
+
+    <!-- 계산 구조 설명 -->
+    <div class="callout info" style="margin-bottom:24px;">
+      <div class="callout-icon">ℹ️</div>
+      <div class="callout-body">
+        <strong>계산 범위 정의 — 프로모션 기간(D0~D7) 내 회수 수익 기준</strong><br/>
+        · <strong>NRU (7,890명)</strong>: D0~D7 광고수익만 산정. Part 1 실측값(D0 Excel + D1~D7 BQ × eCPM) 그대로 적용<br/>
+        · <strong>RU (8,346명)</strong>: D0~D7 광고수익만 산정. BQ 실측 ad views × 역산 eCPM<br/>
+        · <strong>총 지급액</strong>: BQ 실측 297,240원 (Excel 296,325원과 915원 차이 — BQ 기준 적용)<br/>
+        · RU 카운트: 16,236명(전체) − 7,890명(NRU) = <strong>8,346명</strong>
+      </div>
+    </div>
+
+    <!-- NRU D0~D7 광고수익 테이블 -->
+    <h3 style="font-size:15px;font-weight:700;color:var(--gray-700);margin-bottom:12px;">📊 NRU D0~D7 광고수익 (7,890명)</h3>
+    <div class="table-wrap" style="margin-bottom:24px;">
+      <table>
+        <thead>
+          <tr>
+            <th>구간</th>
+            <th>계산 방식</th>
+            <th class="td-right">1인당</th>
+            <th class="td-right">합계</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>D0</td>
+            <td style="font-size:13px;color:var(--gray-600);">Excel 실측 (NRU 평균 0.471 RV, 1.879 IT)</td>
+            <td class="td-right td-mono">13.094원</td>
+            <td class="td-right td-mono">103,312원</td>
+          </tr>
+          <tr>
+            <td>D1 ~ D7</td>
+            <td style="font-size:13px;color:var(--gray-600);">BQ 실측 ad views × 날짜별 실측 eCPM</td>
+            <td class="td-right td-mono">48.858원</td>
+            <td class="td-right td-mono">385,490원</td>
+          </tr>
+          <tr class="row-total">
+            <td colspan="2">NRU D0~D7 합계</td>
+            <td class="td-right td-mono">61.952원</td>
+            <td class="td-right td-mono">488,802원</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- eCPM 역산 근거 -->
+    <h3 style="font-size:15px;font-weight:700;color:var(--gray-700);margin-bottom:12px;">🔢 RU eCPM 산정 근거 (NRU D0~D7 역산)</h3>
+    <p style="font-size:14px;color:var(--gray-600);margin-bottom:12px;line-height:1.7;">
+      RU D0 날짜 범위가 NRU와 동일(2/10~2/28)하므로 같은 eCPM 적용. NRU D0~D7 총수익(488,802원)과 BQ 실측 광고 수(RV 26,334 / IT 65,935)로 역산:
+    </p>
+    <div class="table-wrap" style="margin-bottom:24px;">
+      <table>
+        <thead>
+          <tr><th>광고 유형</th><th class="td-right">역산 eCPM</th><th>근거</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>RV (리워드)</td>
+            <td class="td-right td-mono">6,483원</td>
+            <td style="font-size:13px;color:var(--gray-600);">RV/IT 비율 = D36+ eCPM 비율 적용 (6,818 : 5,072 = 1.344)</td>
+          </tr>
+          <tr>
+            <td>IT (전면)</td>
+            <td class="td-right td-mono">4,822원</td>
+            <td style="font-size:13px;color:var(--gray-600);">(26,334×r + 65,935×i) / 1,000 = 488,802원 → i = 4,822원</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- RU D0~D7 광고수익 테이블 -->
+    <h3 style="font-size:15px;font-weight:700;color:var(--gray-700);margin-bottom:12px;">📊 RU D0~D7 광고수익 (8,346명)</h3>
+    <div class="table-wrap" style="margin-bottom:24px;">
+      <table>
+        <thead>
+          <tr>
+            <th>Dn</th>
+            <th class="td-right">RV 노출수</th>
+            <th class="td-right">IT 노출수</th>
+            <th class="td-right">Active Users</th>
+            <th class="td-right">수익 (×eCPM÷1000)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>D0</td><td class="td-right">22,475</td><td class="td-right">47,461</td><td class="td-right">5,875</td><td class="td-right td-mono">374,584원</td></tr>
+          <tr><td>D1</td><td class="td-right">16,144</td><td class="td-right">30,359</td><td class="td-right">2,400</td><td class="td-right td-mono">251,053원</td></tr>
+          <tr><td>D2</td><td class="td-right">14,764</td><td class="td-right">27,875</td><td class="td-right">2,054</td><td class="td-right td-mono">230,128원</td></tr>
+          <tr><td>D3</td><td class="td-right">13,963</td><td class="td-right">27,794</td><td class="td-right">1,986</td><td class="td-right td-mono">224,545원</td></tr>
+          <tr><td>D4</td><td class="td-right">14,561</td><td class="td-right">30,853</td><td class="td-right">1,961</td><td class="td-right td-mono">243,181원</td></tr>
+          <tr><td>D5</td><td class="td-right">14,296</td><td class="td-right">27,877</td><td class="td-right">1,887</td><td class="td-right td-mono">227,104원</td></tr>
+          <tr><td>D6</td><td class="td-right">14,051</td><td class="td-right">27,105</td><td class="td-right">1,827</td><td class="td-right td-mono">221,793원</td></tr>
+          <tr><td>D7</td><td class="td-right">13,541</td><td class="td-right">26,068</td><td class="td-right">1,869</td><td class="td-right td-mono">213,484원</td></tr>
+          <tr class="row-total">
+            <td colspan="4">RU D0~D7 합계</td>
+            <td class="td-right td-mono">1,985,872원</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 최종 순수익 계산 -->
+    <h3 style="font-size:15px;font-weight:700;color:var(--gray-700);margin-bottom:12px;">💰 NRU + RU 합산 순수익 (프로모션 기간 내 회수 기준)</h3>
+    <div class="table-wrap" style="margin-bottom:20px;">
+      <table>
+        <thead>
+          <tr><th>항목</th><th>계산</th><th class="td-right">금액</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>NRU D0~D7 광고수익</strong></td>
+            <td style="font-size:13px;color:var(--gray-600);">7,890명 × 61.952원 (D0 Excel + D1~D7 BQ × eCPM)</td>
+            <td class="td-right td-mono">+488,802원</td>
+          </tr>
+          <tr>
+            <td><strong>RU D0~D7 광고수익</strong></td>
+            <td style="font-size:13px;color:var(--gray-600);">8,346명 BQ 실측 × eCPM (RV 6,483 / IT 4,822)</td>
+            <td class="td-right td-mono">+1,985,872원</td>
+          </tr>
+          <tr class="row-cost">
+            <td><strong>총 지급액</strong></td>
+            <td style="font-size:13px;">BQ 실측 (16,236명 전체, NRU+RU 합산)</td>
+            <td class="td-right td-mono">−297,240원</td>
+          </tr>
+          <tr class="row-net">
+            <td colspan="2"><strong>합산 순수익</strong></td>
+            <td class="td-right td-mono"><strong>2,177,434원</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- KPI 카드 -->
+    <div class="kpi-grid">
+      <div class="kpi-card highlight">
+        <div class="kpi-label">합산 순수익 (D0~D7)</div>
+        <div class="kpi-value">2,177,434원</div>
+        <div class="kpi-sub">NRU D0~D7 + RU D0~D7 − 지급액</div>
+      </div>
+      <div class="kpi-card success">
+        <div class="kpi-label">NRU 기여분 (D0~D7)</div>
+        <div class="kpi-value">488,802원</div>
+        <div class="kpi-sub">광고수익의 19.8%</div>
+      </div>
+      <div class="kpi-card success">
+        <div class="kpi-label">RU 기여분 (D0~D7)</div>
+        <div class="kpi-value">1,985,872원</div>
+        <div class="kpi-sub">광고수익의 80.2% — 기존 유저 참여 효과</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">참여자당 순수익</div>
+        <div class="kpi-value">134.1원</div>
+        <div class="kpi-sub">2,177,434원 ÷ 16,236명</div>
+      </div>
+    </div>
+
+    <div class="footnote" style="margin-top:12px;">
+      * NRU·RU 모두 D0~D7 프로모션 기간 내 광고수익만 계상. NRU의 D8 이후 장기 수익(약 +1,299,000원 추정)은 미포함.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ════════════════════════════════════════
+       PART 2 · REWARD INCREASE ANALYSIS
+  ════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">Part 2</div>
+    <div class="section-heading">보상 인상 검토</div>
+
+    <!-- 현재 프로모션 구조 -->
+    <h3 style="font-size:15px;font-weight:700;color:var(--gray-700);margin-bottom:16px;">현재 보상 구조 (7일 출석 체크)</h3>
+    <div class="promo-structure">
+      <div class="day-chip">
+        <div class="day-num">1일차</div>
+        <div class="day-reward">5원</div>
+      </div>
+      <div class="day-chip">
+        <div class="day-num">2일차</div>
+        <div class="day-reward">5원</div>
+      </div>
+      <div class="day-chip">
+        <div class="day-num">3일차</div>
+        <div class="day-reward">10원</div>
+      </div>
+      <div class="day-chip">
+        <div class="day-num">4일차</div>
+        <div class="day-reward">5원</div>
+      </div>
+      <div class="day-chip">
+        <div class="day-num">5일차</div>
+        <div class="day-reward">10원</div>
+      </div>
+      <div class="day-chip">
+        <div class="day-num">6일차</div>
+        <div class="day-reward">10원</div>
+      </div>
+      <div class="day-chip d7">
+        <div class="day-num">7일차</div>
+        <div class="day-reward">25원</div>
+      </div>
+      <div class="day-chip" style="border-style:dashed;background:var(--gray-50);">
+        <div class="day-num">최대</div>
+        <div class="day-reward" style="color:var(--gray-600);">70원</div>
+      </div>
+    </div>
+
+    <!-- 핵심 지표 -->
+    <div class="kpi-grid" style="margin-bottom:24px;">
+      <div class="kpi-card">
+        <div class="kpi-label">7일 완주율</div>
+        <div class="kpi-value">15.7%</div>
+        <div class="kpi-sub">2,547 / 16,236명</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">평균 실제 지급액</div>
+        <div class="kpi-value">18.25원</div>
+        <div class="kpi-sub">최대 70원의 26% 수준</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">D1 리텐션</div>
+        <div class="kpi-value">12.22%</div>
+        <div class="kpi-sub">100명 중 88명이 D1에 이탈</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Gross LTV 마진</div>
+        <div class="kpi-value">8.1%</div>
+        <div class="kpi-sub">비용 18.25 / Gross 226.57</div>
+      </div>
+    </div>
+
+    <!-- 시나리오 -->
+    <h3 style="font-size:15px;font-weight:700;color:var(--gray-700);margin-bottom:16px;">📊 보상 인상 시나리오 (완주율 고정 가정)</h3>
+    <div class="scenario-grid">
+      <div class="scenario-card current">
+        <div class="scenario-label">현재 (7일차 25원)</div>
+        <div class="scenario-reward">70원 max</div>
+        <div class="scenario-cost">평균 지급 18.25원</div>
+        <div class="scenario-ltv">208.32원</div>
+        <div class="scenario-change" style="color:var(--primary);">기준</div>
+      </div>
+      <div class="scenario-card">
+        <div class="scenario-label">7일차 50원으로 인상</div>
+        <div class="scenario-reward">95원 max</div>
+        <div class="scenario-cost">예상 지급 ≈24.8원</div>
+        <div class="scenario-ltv">201.8원</div>
+        <div class="scenario-change neg">▼ -6.5원 (-3.1%)</div>
+      </div>
+      <div class="scenario-card">
+        <div class="scenario-label">7일차 100원으로 인상</div>
+        <div class="scenario-reward">145원 max</div>
+        <div class="scenario-cost">예상 지급 ≈37.8원</div>
+        <div class="scenario-ltv">188.8원</div>
+        <div class="scenario-change neg">▼ -19.5원 (-9.4%)</div>
+      </div>
+      <div class="scenario-card">
+        <div class="scenario-label">7일차 200원으로 인상</div>
+        <div class="scenario-reward">245원 max</div>
+        <div class="scenario-cost">예상 지급 ≈63.8원</div>
+        <div class="scenario-ltv">162.8원</div>
+        <div class="scenario-change neg">▼ -45.5원 (-21.8%)</div>
+      </div>
+    </div>
+    <div class="footnote" style="margin-bottom:24px;">* 완주율이 고정된다는 보수적 가정. 실제로는 높은 보상이 완주율을 소폭 올릴 수 있으나, 보상 헌터 유입으로 LTV 희석 위험도 공존.</div>
+
+    <!-- 보상 단순 인상이 비효율적인 이유 -->
+    <h3 style="font-size:15px;font-weight:700;color:var(--gray-700);margin-bottom:12px;">⚠️ 보상 단순 인상이 비효율적인 이유</h3>
+
+    <div class="callout danger">
+      <div class="callout-icon">📉</div>
+      <div class="callout-body">
+        <strong>완주자에게만 혜택 집중</strong>
+        7일차 보상을 올려도 혜택은 완주 15.7%에게만 돌아감. 나머지 84.3%는 조기 이탈 → 추가 비용 대비 LTV 개선 효과 없음.
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <div class="callout-icon">🎯</div>
+      <div class="callout-body">
+        <strong>이탈이 가장 큰 구간(1→2일차, 63%)을 건드리지 못함</strong>
+        7일차 보상이 높아져도 1→2일차에서 63%가 이미 이탈. 보상 상한이 높아지는 것 자체가 복귀 동기가 되지 않음.
+      </div>
+    </div>
+
+    <div class="divider" style="margin:28px 0;"></div>
+
+    <!-- 3일차+7일차 집중 구조 설계 원칙 -->
+    <h3 style="font-size:15px;font-weight:700;color:var(--gray-700);margin-bottom:12px;">✅ 3일차 + 7일차 집중 구조로의 전환</h3>
+
+    <p style="font-size:14px;color:var(--gray-600);margin-bottom:16px;line-height:1.7;">
+      단순히 총액을 올리는 것이 아니라, <strong>보상이 집중되는 구간을 재설계</strong>하는 것이 핵심이다.
+      전체 보상 일정이 공개되는 구조에서 유저는 1일차부터 중간·최종 목표를 인식하고 복귀를 결정한다.
+      3일차에 의미 있는 보상을 배치하면 "3일만 하면 된다"는 달성 가능한 목표가 생기고,
+      3일 달성 이후에는 매몰 비용 효과로 7일 완주까지 이어질 가능성이 높아진다.
+    </p>
+
+    <div class="callout success" style="margin-bottom:24px;">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <strong>공통 설계 원칙</strong>
+        <ul style="margin-top:6px;padding-left:4px;list-style:none;display:flex;flex-direction:column;gap:4px;">
+          <li>· <strong>3일차 체크포인트:</strong> "3일 = 큰 보상"이 1일차부터 복귀 목표로 설정. 2일차 자체 보상(5원)이 아닌 3일차 기대값이 1→2일차 복귀 동기로 작용.</li>
+          <li>· <strong>7일차 완주 유도:</strong> 3일차 달성 후 매몰 비용 효과 + "4일만 더" 심리 자극.</li>
+          <li>· <strong>보상 헌터 리스크 없음:</strong> 3일 이상 참여해야 주요 보상 수령. 총액과 무관하게 즉시 이탈 유저에게 비효율적인 구조.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 구조 비교 테이블 -->
+    <h3 style="font-size:15px;font-weight:700;color:var(--gray-700);margin-bottom:12px;">보상 구조 비교</h3>
+    <div class="table-wrap" style="margin-bottom:28px;">
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th class="td-right">1일차</th>
+            <th class="td-right">2일차</th>
+            <th class="td-right">3일차</th>
+            <th class="td-right">4일차</th>
+            <th class="td-right">5일차</th>
+            <th class="td-right">6일차</th>
+            <th class="td-right">7일차</th>
+            <th class="td-right">합계</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="pill pill-blue">현재</span></td>
+            <td class="td-right">5원</td>
+            <td class="td-right">5원</td>
+            <td class="td-right">10원</td>
+            <td class="td-right">5원</td>
+            <td class="td-right">10원</td>
+            <td class="td-right">10원</td>
+            <td class="td-right">25원</td>
+            <td class="td-right td-mono"><strong>70원</strong></td>
+          </tr>
+          <tr class="row-highlight">
+            <td><span class="pill pill-green">옵션 1</span></td>
+            <td class="td-right">5원</td>
+            <td class="td-right">5원</td>
+            <td class="td-right"><strong>20원 ★</strong></td>
+            <td class="td-right">5원</td>
+            <td class="td-right">5원</td>
+            <td class="td-right">5원</td>
+            <td class="td-right"><strong>25원 ★</strong></td>
+            <td class="td-right td-mono"><strong>70원</strong></td>
+          </tr>
+          <tr class="row-highlight">
+            <td><span class="pill pill-green">옵션 2</span></td>
+            <td class="td-right">5원</td>
+            <td class="td-right">5원</td>
+            <td class="td-right"><strong>30원 ★</strong></td>
+            <td class="td-right">10원</td>
+            <td class="td-right">10원</td>
+            <td class="td-right">10원</td>
+            <td class="td-right"><strong>30원 ★</strong></td>
+            <td class="td-right td-mono"><strong>100원</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 옵션별 특징 -->
+    <div class="two-col" style="margin-bottom:32px;">
+      <div class="rec-box">
+        <h3>옵션 1 · 70원</h3>
+        <ul class="rec-list">
+          <li>추가 비용 없이 구조 변경만으로 효과 기대.</li>
+          <li>3일차 20원으로 중간 체크포인트 설정. 현재(10원) 대비 체감 목표 강화.</li>
+          <li>7일차 25원 유지 — 기존 완주 동기 보존.</li>
+        </ul>
+      </div>
+      <div class="rec-box">
+        <h3>옵션 2 · 100원</h3>
+        <ul class="rec-list">
+          <li>3일차 30원 — 옵션 1보다 더 강한 체감 목표. "3일 = 30원" 메시지 선명.</li>
+          <li>7일차 25원 → 30원 인상으로 완주 보상도 함께 강화.</li>
+          <li>추가 비용 발생 (하단 비용 분석 참고).</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 옵션 2 비용·LTV 변경 분석 -->
+    <h3 style="font-size:15px;font-weight:700;color:var(--gray-700);margin-bottom:12px;">📊 옵션 2 선택 시 비용 및 LTV 변화</h3>
+
+    <div class="table-wrap" style="margin-bottom:16px;">
+      <table>
+        <thead>
+          <tr>
+            <th>일차</th>
+            <th class="td-right">참여자 수</th>
+            <th class="td-right">현재 보상</th>
+            <th class="td-right">옵션 2 보상</th>
+            <th class="td-right">변동</th>
+            <th class="td-right">추가 비용</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1일차</td>
+            <td class="td-right">16,236명</td>
+            <td class="td-right">5원</td>
+            <td class="td-right">5원</td>
+            <td class="td-right">–</td>
+            <td class="td-right td-mono">0원</td>
+          </tr>
+          <tr>
+            <td>2일차</td>
+            <td class="td-right">6,006명</td>
+            <td class="td-right">5원</td>
+            <td class="td-right">5원</td>
+            <td class="td-right">–</td>
+            <td class="td-right td-mono">0원</td>
+          </tr>
+          <tr>
+            <td>3일차</td>
+            <td class="td-right">4,295명</td>
+            <td class="td-right">10원</td>
+            <td class="td-right"><strong>30원</strong></td>
+            <td class="td-right" style="color:var(--danger);">+20원</td>
+            <td class="td-right td-mono">85,900원</td>
+          </tr>
+          <tr>
+            <td>4일차</td>
+            <td class="td-right">3,620명</td>
+            <td class="td-right">5원</td>
+            <td class="td-right"><strong>10원</strong></td>
+            <td class="td-right" style="color:var(--danger);">+5원</td>
+            <td class="td-right td-mono">18,100원</td>
+          </tr>
+          <tr>
+            <td>5일차</td>
+            <td class="td-right">3,191명</td>
+            <td class="td-right">10원</td>
+            <td class="td-right">10원</td>
+            <td class="td-right">–</td>
+            <td class="td-right td-mono">0원</td>
+          </tr>
+          <tr>
+            <td>6일차</td>
+            <td class="td-right">2,845명</td>
+            <td class="td-right">10원</td>
+            <td class="td-right">10원</td>
+            <td class="td-right">–</td>
+            <td class="td-right td-mono">0원</td>
+          </tr>
+          <tr>
+            <td>7일차</td>
+            <td class="td-right">2,547명</td>
+            <td class="td-right">25원</td>
+            <td class="td-right"><strong>30원</strong></td>
+            <td class="td-right" style="color:var(--danger);">+5원</td>
+            <td class="td-right td-mono">12,735원</td>
+          </tr>
+          <tr class="row-total">
+            <td colspan="5">총 추가 비용</td>
+            <td class="td-right td-mono">116,735원</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="kpi-grid" style="margin-bottom:8px;">
+      <div class="kpi-card">
+        <div class="kpi-label">현재 총 지급액</div>
+        <div class="kpi-value">296,325원</div>
+        <div class="kpi-sub">평균 18.25원 / 참여자</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">옵션 2 총 지급액</div>
+        <div class="kpi-value">413,060원</div>
+        <div class="kpi-sub">평균 25.44원 / 참여자</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">NRU 1인당 추가 비용</div>
+        <div class="kpi-value">+7.19원</div>
+        <div class="kpi-sub">116,735원 ÷ 16,236명</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">순 LTV 변화 (정적 추정)</div>
+        <div class="kpi-value">201.1원</div>
+        <div class="kpi-sub">208.32 → 201.1원 (-7.19원)</div>
+      </div>
+    </div>
+    <div class="footnote" style="margin-bottom:32px;">* 완주율·참여자 수 변화 없다는 보수적 가정. 실제로는 완주율 상승 시 LTV 회수 가능.</div>
+
+    <!-- 4/5/6일차 10원 인상 검토 -->
+    <h3 style="font-size:15px;font-weight:700;color:var(--gray-700);margin-bottom:12px;">🔍 4/5/6일차 일괄 10원 인상 검토</h3>
+
+    <p style="font-size:14px;color:var(--gray-600);margin-bottom:16px;line-height:1.7;">
+      옵션 1에서 4/5/6일차를 5원 → 10원으로 올리면 총액이 85원(옵션 1 기준)이 된다. 옵션 2는 이미 4/5/6일차가 10원으로 설정되어 있다.
+    </p>
+
+    <div class="two-col">
+      <div class="callout success" style="margin-bottom:0;">
+        <div class="callout-icon">✅</div>
+        <div class="callout-body">
+          <strong>장점</strong>
+          <ul style="margin-top:6px;padding-left:4px;list-style:none;display:flex;flex-direction:column;gap:4px;">
+            <li>· D3 이후 "보상 계곡" 완화. 3일차에 큰 보상을 받은 후 급격히 떨어지는 느낌 없이 D7까지 일관된 흐름 유지.</li>
+            <li>· D3→D7 구간 일 이탈률(10~15%)을 소폭 낮출 여지. "매일 10원씩 받으며 D7 30원을 향해 간다"는 흐름이 자연스러움.</li>
+            <li>· D7 완주 기대값 상승: 남은 보상(4+5+6+7일차) 합이 커져 D3 이후 완주 동기 강화.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout warning" style="margin-bottom:0;">
+        <div class="callout-icon">⚠️</div>
+        <div class="callout-body">
+          <strong>단점 / 한계</strong>
+          <ul style="margin-top:6px;padding-left:4px;list-style:none;display:flex;flex-direction:column;gap:4px;">
+            <li>· D3 이후 이탈률은 이미 10~15%로 안정적. 이 구간 유저는 게임 흥미 소실로 이탈하는 경향이 높아 보상 증액의 임팩트가 제한적.</li>
+            <li>· 추가 비용 발생: 옵션 1 기준 4/5/6일차 인상 시 +48,280원 (NRU 1인당 약 +3원). 3일차 증액 대비 효율이 낮음.</li>
+            <li>· 핵심 레버는 여전히 3일차와 7일차. 중간 일차 보강보다 두 체크포인트의 매력도가 완주율에 더 큰 영향.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ════════════════════════════════════════
+       PART 3 · CONCLUSION
+  ════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">결론</div>
+    <div class="section-heading">요약</div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>항목</th>
+            <th>결과 / 판단</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>500007 프로모션 순 LTV</td>
+            <td><strong>208.32원 / 인</strong> — 코호트 총 1,643,645원</td>
+          </tr>
+          <tr>
+            <td>LTV에서 가장 큰 비중</td>
+            <td>D36+ 무한 테일 38.2% → 장기 잔존 유저의 기여가 핵심</td>
+          </tr>
+          <tr>
+            <td>프로모션 비용 효율</td>
+            <td>18.25원 비용으로 226.57원 Gross 창출 → ROI 양호</td>
+          </tr>
+          <tr>
+            <td>보상 총액 단순 인상</td>
+            <td><span class="pill pill-red">비추천</span> — 완주자 집중, D1 이탈 구조 해소 안됨</td>
+          </tr>
+          <tr>
+            <td>옵션 1 · 3일차 20원 + 7일차 25원 (70원)</td>
+            <td><span class="pill pill-green">추천</span> — 추가 비용 없음, 구조 변경만으로 효과 기대</td>
+          </tr>
+          <tr>
+            <td>옵션 2 · 3일차 30원 + 7일차 30원 (100원)</td>
+            <td><span class="pill pill-green">추천</span> — 추가 비용 +7.19원/NRU, 체감 목표·완주 보상 동시 강화</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Puzzle Block Master · Toss Platform · 500007 Promotion Analysis · 분석 기준일 2026-03-31<br/>
+  BigQuery: <code>game-log-359704.raw.puzzle_block_master_toss</code>
+</div>
+
+</body>
+</html>
