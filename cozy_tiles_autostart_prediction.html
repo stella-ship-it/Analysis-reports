@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cozy Tiles — Autostart 도입 예측</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f6fa;
+      color: #1a1a2e;
+      line-height: 1.6;
+    }
+    header {
+      background: linear-gradient(135deg, #6c63ff 0%, #3ecfcf 100%);
+      color: white;
+      padding: 28px 40px 22px;
+    }
+    header h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    header .meta { font-size: 12px; opacity: 0.8; }
+    header .spec { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+    header .spec span {
+      background: rgba(255,255,255,0.2);
+      border-radius: 20px;
+      padding: 3px 12px;
+      font-size: 12px;
+    }
+
+    main { max-width: 780px; margin: 28px auto; padding: 0 24px 60px; }
+
+    /* 핵심 요약 */
+    .summary-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px 28px;
+      box-shadow: 0 2px 8px rgba(108,99,255,0.1);
+      border-left: 5px solid #6c63ff;
+      margin-bottom: 32px;
+    }
+    .summary-card h2 {
+      font-size: 13px; font-weight: 700;
+      color: #6c63ff;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .summary-item .label { font-size: 11px; color: #888; margin-bottom: 4px; }
+    .summary-item .val   { font-size: 19px; font-weight: 700; color: #3a3a5c; }
+    .summary-item .delta { font-size: 11px; color: #1a9652; font-weight: 600; }
+    .summary-desc {
+      font-size: 13px; color: #555;
+      background: #f8f7ff;
+      border-radius: 8px;
+      padding: 12px 14px;
+      line-height: 1.7;
+    }
+    .summary-desc strong { color: #6c63ff; }
+
+    /* 인과 흐름 바 */
+    .flow-bar {
+      display: flex;
+      align-items: center;
+      margin-bottom: 28px;
+      gap: 0;
+    }
+    .flow-step {
+      flex: 1;
+      background: white;
+      border-radius: 10px;
+      padding: 12px 14px;
+      text-align: center;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      border-top: 3px solid #6c63ff;
+    }
+    .flow-step .step-num {
+      font-size: 10px; font-weight: 700;
+      color: #6c63ff;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .flow-step .step-title {
+      font-size: 12px; font-weight: 700;
+      color: #3a3a5c;
+      margin-top: 3px;
+    }
+    .flow-step .step-val {
+      font-size: 11px; color: #1a9652;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+    .flow-arrow {
+      font-size: 18px;
+      color: #b0aee0;
+      padding: 0 6px;
+      flex-shrink: 0;
+    }
+
+    /* 섹션 */
+    section { margin-bottom: 8px; }
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .section-header h2 {
+      font-size: 15px; font-weight: 700;
+      color: #3a3a5c;
+      border-left: 4px solid #6c63ff;
+      padding-left: 10px;
+    }
+    .section-header .because {
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    /* 섹션 간 연결 화살표 */
+    .section-connector {
+      text-align: center;
+      padding: 10px 0;
+      font-size: 12px;
+      color: #b0aee0;
+    }
+    .section-connector span {
+      background: #f0efff;
+      border-radius: 20px;
+      padding: 4px 14px;
+      display: inline-block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    thead tr { background: #f0efff; }
+    th {
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 11px; font-weight: 700;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    td { padding: 10px 14px; border-bottom: 1px solid #f2f2f2; }
+    tr:last-child td { border-bottom: none; }
+    .hl { font-weight: 700; color: #6c63ff; }
+    .green { font-weight: 700; color: #1a9652; }
+    .note {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #888;
+      padding-left: 4px;
+    }
+
+    /* 체크포인트 */
+    .checkpoint { margin-top: 32px; }
+
+    footer {
+      text-align: center;
+      font-size: 11px;
+      color: #ccc;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 600px) {
+      .summary-grid { grid-template-columns: repeat(2, 1fr); }
+      .flow-bar { flex-direction: column; }
+      .flow-arrow { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Cozy Tiles — Autostart 도입 예측</h1>
+  <div class="meta">Facebook 플랫폼 · BQ 최근 14일 + AN 데이터 기반 · 2026-05-12</div>
+  <div class="spec">
+    <span>발동: 스테이지 클리어 후</span>
+    <span>타이머: 3초</span>
+    <span>취소 버튼: 없음</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- 핵심 요약 -->
+  <div class="summary-card">
+    <h2>핵심 요약 — 중간 시나리오 기준</h2>
+    <div class="summary-grid">
+      <div class="summary-item">
+        <div class="label">Chain-break율</div>
+        <div class="val">13.57% → 6.1%</div>
+        <div class="delta">클리어 후 이탈 감소</div>
+      </div>
+      <div class="summary-item">
+        <div class="label">세션당 스테이지</div>
+        <div class="val">4.88 → 5.14</div>
+        <div class="delta">▲ +5.2%</div>
+      </div>
+      <div class="summary-item">
+        <div class="label">세션당 stage_start IT FINISH</div>
+        <div class="val">1.85 → 1.94</div>
+        <div class="delta">▲ +5.2%</div>
+      </div>
+      <div class="summary-item">
+        <div class="label">월 추가 수익 (예측)</div>
+        <div class="val">+$1,550</div>
+        <div class="delta">현재 $38,059/월 대비 +4.1%</div>
+      </div>
+    </div>
+    <div class="summary-desc">
+      현재 클리어 이벤트의 <strong>13.57%</strong>가 다음 스테이지로 이어지지 않습니다.
+      Autostart는 이 chain-break를 줄여 스테이지 수 → IT FINISH → 수익으로 이어지는
+      <strong>연쇄 증가 효과</strong>를 만듭니다.
+      단, 강제 진입에 반발한 유저의 DAU·retention 이탈 가능성은 A/B 테스트로만 확인 가능합니다.
+    </div>
+  </div>
+
+  <!-- 인과 흐름 -->
+  <div class="flow-bar">
+    <div class="flow-step">
+      <div class="step-num">Step 1</div>
+      <div class="step-title">Chain-break 감소</div>
+      <div class="step-val">13.57% → 6.1%</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="step-num">Step 2</div>
+      <div class="step-title">스테이지 수 증가</div>
+      <div class="step-val">4.88 → 5.14회/세션</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="step-num">Step 3</div>
+      <div class="step-title">IT FINISH 증가</div>
+      <div class="step-val">1.85 → 1.94회/세션</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="step-num">Step 4</div>
+      <div class="step-title">수익 증가</div>
+      <div class="step-val">+$52/일 · +$1,550/월</div>
+    </div>
+  </div>
+
+  <!-- Step 1+2: Chain-break → 스테이지 -->
+  <section>
+    <div class="section-header">
+      <h2>Step 1→2 &nbsp; Chain-break 감소 → 스테이지 수 증가</h2>
+    </div>
+
+    <table style="margin-bottom:10px;">
+      <thead>
+        <tr><th>용어</th><th>정의</th><th>측정 방법</th><th>BQ 실측값</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Chain-break</strong></td>
+          <td>클리어(2300) 후 같은 세션 내 다음 스테이지 시작(2100)이 없는 경우. Play Next를 여러 번 눌렀어도 마지막 클리어 후 이탈하면 1회 발생.</td>
+          <td>클리어 이벤트 단위 LEAD() 분석</td>
+          <td class="hl">13.57%<br><span style="font-weight:400;font-size:11px;color:#888;">342,223 / 2,522,831</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table>
+      <thead>
+        <tr><th>시나리오</th><th>Chain-break율 변화 <span style="font-weight:400;color:#e07b00;">가정</span></th><th>현재 스테이지/세션</th><th>예측</th><th>변화</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>보수적</td>
+          <td>13.57% → 8.1% <span style="color:#aaa;font-size:11px;">(40% 감소)</span></td>
+          <td>4.88회</td><td class="hl">5.07회</td><td class="green">+3.8%</td>
+        </tr>
+        <tr style="background:#fafaff;">
+          <td><strong>중간</strong></td>
+          <td><strong>13.57% → 6.1%</strong> <span style="color:#aaa;font-size:11px;">(55% 감소)</span></td>
+          <td>4.88회</td><td class="hl">5.14회</td><td class="green">+5.2%</td>
+        </tr>
+        <tr>
+          <td>낙관적</td>
+          <td>13.57% → 4.1% <span style="color:#aaa;font-size:11px;">(70% 감소)</span></td>
+          <td>4.88회</td><td class="hl">5.21회</td><td class="green">+6.7%</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note">* Chain-break율 감소폭은 가정. 계산: chain-break 342,223회 × 감소율 ÷ 게임플레이 세션 735,437 = 추가 스테이지/세션. 실제 감소폭은 A/B 테스트로만 확인 가능.</div>
+  </section>
+
+  <div class="section-connector"><span>↓ &nbsp; 스테이지 증가 → stage_start IT가 비례해서 늘어납니다</span></div>
+
+  <!-- Step 3: 스테이지 → IT FINISH -->
+  <section>
+    <div class="section-header">
+      <h2>Step 2→3 &nbsp; 스테이지 증가 → stage_start IT FINISH 증가</h2>
+    </div>
+    <table>
+      <thead>
+        <tr><th>시나리오</th><th>현재 stage_start IT/세션</th><th>예측 IT START</th><th>예측 IT FINISH</th><th>FINISH 증가율</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>보수적</td>
+          <td>START 2.50 / FINISH 1.85</td>
+          <td>2.59회</td><td>1.85 → <strong>1.92회</strong></td><td class="green">+3.8%</td>
+        </tr>
+        <tr style="background:#fafaff;">
+          <td><strong>중간</strong></td>
+          <td>START 2.50 / FINISH 1.85</td>
+          <td>2.63회</td><td>1.85 → <strong>1.94회</strong></td><td class="green">+5.2%</td>
+        </tr>
+        <tr>
+          <td>낙관적</td>
+          <td>START 2.50 / FINISH 1.85</td>
+          <td>2.67회</td><td>1.85 → <strong>1.97회</strong></td><td class="green">+6.7%</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note">* 계산: 추가 스테이지/세션 × stage_start IT 발생률(0.512) = 추가 IT START → × 완료율(73.86%) = 추가 IT FINISH. stage_retry 등 다른 position IT는 변동 없음. IT 발생률 0.512는 현재 전체 stage start 평균 기준 — IT 쿨다운 로직이 있을 경우 실제 추가 IT는 더 적을 수 있음.</div>
+  </section>
+
+  <div class="section-connector"><span>↓ &nbsp; IT FINISH 증가 → eCPM 기준 수익으로 환산합니다</span></div>
+
+  <!-- Step 4: IT FINISH → 수익 -->
+  <section>
+    <div class="section-header">
+      <h2>Step 3→4 &nbsp; IT FINISH 증가 → 수익 증가</h2>
+    </div>
+    <table>
+      <thead>
+        <tr><th>시나리오</th><th>추가 일 IT FINISH</th><th>추가 일 수익</th><th>추가 월 수익</th><th>현재 대비</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>보수적</td>
+          <td>+3,697회</td><td>+$37.6</td><td class="hl">+$1,127</td><td class="green">+3.0%</td>
+        </tr>
+        <tr style="background:#fafaff;">
+          <td><strong>중간</strong></td>
+          <td>+5,085회</td><td>+$51.7</td><td class="hl">+$1,550</td><td class="green">+4.1%</td>
+        </tr>
+        <tr>
+          <td>낙관적</td>
+          <td>+6,469회</td><td>+$65.7</td><td class="hl">+$1,972</td><td class="green">+5.2%</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="note">* 현재 월 수익: $38,059 ($1,268.62/일 × 30). 계산: (chain-break × 감소율 ÷ 14일) × 0.512 × 73.86% = 추가 일 IT FINISH → × eCPM($10.16) ÷ 1,000 = 추가 일 수익. IT FINISH 수: BQ 직접 계산. eCPM: AN 파일 최근 14일 평균.</div>
+  </section>
+
+  <!-- 체크포인트 -->
+  <section class="checkpoint">
+    <div class="section-header"><h2>체크포인트</h2></div>
+    <table>
+      <thead>
+        <tr><th>항목</th><th>내용</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>타이머 시간</td>
+          <td>3초는 결과 화면을 볼 여유가 없음 → <strong>5~7초 A/B 테스트 권장</strong></td>
+        </tr>
+        <tr>
+          <td>핵심 모니터링</td>
+          <td>IT FINISH 절대값(4010 이벤트 수) 변화 + DAU·retention 변화 — 강제 진입 반발 여부 확인</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<footer>BQ: game-log-359704.raw.cozy_tiles · AN: AudienceNetwork 파일 · 최근 14일 · 2026-05-12</footer>
+
+</body>
+</html>
