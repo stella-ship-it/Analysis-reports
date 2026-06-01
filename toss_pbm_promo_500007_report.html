@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>토스 PBM 프로모션 500007 — 4월 실행분 효과 분석</title>
+<style>
+  :root{
+    --blue:#3182f6; --ink:#191f28; --gray:#8b95a1; --line:#e5e8eb;
+    --bg:#f9fafb; --pos:#1aae5a; --neg:#f04452; --soft:#f2f4f6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard",sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.6; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px; margin:0 auto; padding:48px 24px 80px;}
+  header{border-bottom:2px solid var(--ink); padding-bottom:20px; margin-bottom:8px;}
+  .tag{display:inline-block; background:#e8f3ff; color:var(--blue); font-size:13px; font-weight:700;
+    padding:4px 10px; border-radius:6px; margin-bottom:12px;}
+  h1{font-size:26px; font-weight:800; letter-spacing:-.5px;}
+  .sub{color:var(--gray); font-size:14px; margin-top:6px;}
+  .hero{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:28px 0;}
+  .card{background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px 16px;}
+  .card .k{font-size:12px; color:var(--gray); font-weight:600;}
+  .card .v{font-size:26px; font-weight:800; margin-top:6px; letter-spacing:-.5px;}
+  .card .v small{font-size:14px; font-weight:600; color:var(--gray);}
+  .pos{color:var(--pos)} .neg{color:var(--neg)}
+  h2{font-size:18px; font-weight:800; margin:38px 0 14px; letter-spacing:-.3px;
+    display:flex; align-items:center; gap:8px;}
+  h2::before{content:""; width:4px; height:18px; background:var(--blue); border-radius:2px;}
+  table{width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line);
+    border-radius:12px; overflow:hidden; font-size:14px;}
+  th,td{padding:11px 14px; text-align:right; border-bottom:1px solid var(--line);}
+  th:first-child,td:first-child{text-align:left;}
+  thead th{background:var(--soft); font-weight:700; color:#4e5968; font-size:13px;}
+  tbody tr:last-child td{border-bottom:none;}
+  .total td{font-weight:800; background:#fbfcfe;}
+  .hl{background:#e8f3ff !important;}
+  .note{font-size:13px; color:#4e5968; background:#fff; border:1px solid var(--line);
+    border-left:3px solid var(--blue); border-radius:8px; padding:14px 16px; margin-top:14px;}
+  .note b{color:var(--ink);}
+  ul{margin:10px 0 0 2px; padding-left:18px; font-size:14px; color:#333d4b;}
+  li{margin-bottom:6px;}
+  .pill{font-size:12px; font-weight:700; padding:2px 8px; border-radius:20px;}
+  .pill.g{background:#e6f7ee; color:var(--pos);} .pill.r{background:#fdecee; color:var(--neg);}
+  .pill.b{background:#e8f3ff; color:var(--blue);}
+  .concl{background:linear-gradient(135deg,#3182f6,#1b64da); color:#fff; border-radius:16px;
+    padding:24px 26px; margin:36px 0 0;}
+  .concl h3{font-size:16px; margin-bottom:8px;}
+  .concl p{font-size:15px; opacity:.95;}
+  .concl .big{font-size:22px; font-weight:800; margin-top:4px;}
+  footer{margin-top:40px; padding-top:18px; border-top:1px solid var(--line);
+    font-size:12px; color:var(--gray); line-height:1.7;}
+  .flow{font-size:13px; color:var(--gray); font-family:monospace; background:var(--soft);
+    padding:10px 12px; border-radius:8px; margin-top:8px; word-break:break-all;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="tag">Toss · Puzzle Block Master</span>
+    <h1>프로모션 500007 — 4월 실행분 효과 분석</h1>
+    <div class="sub">실행 구간 2026-04-13 ~ 04-30 · <code>type=login_count_7</code> 출석 재참여 프로모션 · 테스트 계정 제외</div>
+  </header>
+
+  <div class="concl" style="margin:24px 0 4px">
+    <h3>종합 결론</h3>
+    <p>보상 비용 <b>234,260₩</b>을 투입해 순증분 광고 수익 약 <b>89만원</b>을 창출한</p>
+    <p class="big">순증분 ROAS ≈ 3.8배 · ROI +280% 의 흑자 캠페인</p>
+  </div>
+
+  <div class="hero">
+    <div class="card">
+      <div class="k">보상 비용</div>
+      <div class="v">234,260<small>₩</small></div>
+    </div>
+    <div class="card">
+      <div class="k">순증분 광고 수익 (중심)</div>
+      <div class="v pos">≈890,000<small>₩</small></div>
+    </div>
+    <div class="card">
+      <div class="k">순증분 ROAS</div>
+      <div class="v pos">3.8<small>배 (+280%)</small></div>
+    </div>
+  </div>
+
+  <h2>1 · 프로모션 식별 &amp; 규모</h2>
+  <div class="flow">entrypoint_now → intoss://supergene-puzzleblockmaster/promotion?<b>id=500007</b>&amp;<b>type=login_count_7</b>&amp;referrer=…</div>
+  <table style="margin-top:14px">
+    <thead><tr><th>구분</th><th>유저 수</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>전체 접속 유저</td><td>22,375</td><td>기간 내 활성</td></tr>
+      <tr class="hl"><td>보상 수령자 (참여자)</td><td>16,301</td><td>전체의 72.9% · ROI 기준</td></tr>
+      <tr><td>클릭스루 직접유입</td><td>1,051</td><td>배너 직접 클릭(하위집합)</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><b>핵심:</b> 프로모션은 누적 로그인 ~7회 <b>초기 단계 유저만 타겟</b>합니다. 미수령 6,074명은 평균 로그인 37회의 <b>고참 유저로 대상 외</b>(수령자 평균 6.1회). 따라서 "전체 접속=참여" 가정은 과대평가이며, 적정 기준은 <b>보상 수령자 16,301명</b>입니다.</div>
+
+  <h2>2 · 보상 비용 (일차별)</h2>
+  <table>
+    <thead><tr><th>출석 일차</th><th>지급액</th><th>수령 인원</th><th>비용</th></tr></thead>
+    <tbody>
+      <tr><td>1일차</td><td>5₩</td><td>14,692</td><td>73,465₩</td></tr>
+      <tr><td>2일차</td><td>5₩</td><td>5,578</td><td>27,900₩</td></tr>
+      <tr><td>3일차</td><td>10₩</td><td>3,622</td><td>36,220₩</td></tr>
+      <tr><td>4일차</td><td>5₩</td><td>2,749</td><td>13,745₩</td></tr>
+      <tr><td>5일차</td><td>10₩</td><td>2,227</td><td>22,270₩</td></tr>
+      <tr><td>6일차</td><td>10₩</td><td>1,886</td><td>18,860₩</td></tr>
+      <tr><td>7일차</td><td>25₩</td><td>1,672</td><td>41,800₩</td></tr>
+      <tr class="total"><td>합계</td><td>—</td><td>완주율 11.4%</td><td>234,260₩</td></tr>
+    </tbody>
+  </table>
+  <div class="note">완주 퍼널: 1일차 14,692명 → 7일차 1,672명. 비용의 31%가 1일차(진입 보상)에 집중, 후반 완주 보상은 인원이 적어 부담이 작은 건전한 구조.</div>
+
+  <h2>3 · 광고 수익 (참여자 16,301명 · 일자별 eCPM 적용)</h2>
+  <table>
+    <thead><tr><th>광고 유형</th><th>노출</th><th>실현 eCPM(평균)</th><th>수익</th></tr></thead>
+    <tbody>
+      <tr><td>리워드</td><td>115,860</td><td>≈6,657₩</td><td>≈758,000₩</td></tr>
+      <tr><td>전면</td><td>196,308</td><td>≈4,954₩</td><td>≈1,031,000₩</td></tr>
+      <tr><td>배너</td><td>211,655</td><td>≈2,260₩</td><td>≈478,000₩</td></tr>
+      <tr class="total"><td>합계 (gross)</td><td>523,823</td><td>—</td><td>≈2,267,000₩</td></tr>
+    </tbody>
+  </table>
+  <div class="note">IAP 매출은 $0 — PBM 토스는 IAP가 사실상 없음(전체 18일 결제 성공 6건). 프로모션의 금전 효과는 <b>전액 광고 수익</b>(리워드·전면·배너 3종 모두 포함).</div>
+
+  <h2>4 · 순증분 효과 (이중차분 DiD)</h2>
+  <div class="note" style="border-left-color:var(--pos)">
+    <b>쉽게 말하면 👇</b>
+    <ul style="margin-top:8px">
+      <li>참여자 광고 수익 전부가 프로모션 덕은 아님 — 일부는 <b>어차피 봤을 광고</b></li>
+      <li>그래서 <b>프로모션을 안 받은 고참 유저(대조군)</b>와 비교</li>
+      <li>고참은 같은 기간 자연히 <b>−19% 감소</b> → 프로모션이 없었다면 타겟도 비슷하게 줄었을 것</li>
+      <li>그런데 타겟은 오히려 <b>+26% 증가</b> → 이 <b>차이</b>가 프로모션이 추가로 만든 효과</li>
+      <li>이 추가 비율(리워드 53%·전면 35%·배너 26%)을 참여자 광고 수익에 적용 = <b>순증분 ≈89만원</b></li>
+    </ul>
+  </div>
+  <table>
+    <thead><tr><th>그룹 (총 광고노출)</th><th>실행 전(12일)</th><th>실행 후(12일)</th><th>변화</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td>타겟 (초기, 로그인≤10) · 13,157명</td><td>51,816</td><td>65,493</td><td><span class="pill g">+26.4%</span></td></tr>
+      <tr><td>대조 (고참, 로그인≥25) · 2,587명</td><td>407,217</td><td>330,853</td><td><span class="pill r">−18.8%</span></td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:13px;color:var(--gray);margin:14px 0 8px">대조군 추세를 반사실로 적용한 광고 유형별 증분 비율:</p>
+  <table>
+    <thead><tr><th>광고</th><th>실측 후(B)</th><th>반사실</th><th>증분 노출</th><th>증분 비율</th></tr></thead>
+    <tbody>
+      <tr><td>리워드</td><td>14,031</td><td>6,549</td><td>7,482</td><td>53.3%</td></tr>
+      <tr><td>전면</td><td>23,311</td><td>15,106</td><td>8,205</td><td>35.2%</td></tr>
+      <tr><td>배너</td><td>28,151</td><td>20,902</td><td>7,249</td><td>25.8%</td></tr>
+    </tbody>
+  </table>
+  <div class="note">같은 달력·eCPM 환경에서 <b>타겟군은 +26% 증가, 미타겟 고참은 −19% 감소</b> → 프로모션이 분명한 divergence 유발. 위 증분 비율을 참여자 광고 수익에 적용 시 <b>순증분 ≈ 890,000₩</b> (리워드 404K + 전면 363K + 배너 123K). 보수적으로(자연 흐름 0% 가정) 잡아도 순증분 ROAS 2.25배로 흑자.</div>
+
+  <footer>
+    <b>데이터 출처</b> · game-log-359704.raw.puzzle_block_master_toss · 토스 광고 대시보드 eCPM(₩, 노출당)<br>
+    <b>방법론</b> · 실행분 = entrypoint_now scheme_uri(id=500007) · 비용 = 11004_TOSS_PROMOTION_REWARD의 rewardAmount 합 · 수익 = 노출(RV·전면·배너 FINISH) × 일자별 eCPM · 순증분 = 초기유저(처치) vs 고참(대조) 이중차분(pre 4/1–4/12 vs post 4/13–4/24, pre 활성 패널 고정)<br>
+    <b>제외</b> · is_dev · QA 계정(player_id 1720675736985696)<br>
+    <b>한계</b> · gross→net 환산은 DiD 평행추세 가정에 의존 · 신규 유입 미계상(과소추정 방향)<br>
+    생성일 2026-06-01
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>토스 코지타일즈 출석부 프로모션 — 효과 분석</title>
+<style>
+  :root{
+    --blue:#3182f6; --ink:#191f28; --gray:#8b95a1; --line:#e5e8eb;
+    --bg:#f9fafb; --pos:#1aae5a; --neg:#f04452; --soft:#f2f4f6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard",sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.6; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:880px; margin:0 auto; padding:48px 24px 80px;}
+  header{border-bottom:2px solid var(--ink); padding-bottom:20px; margin-bottom:8px;}
+  .tag{display:inline-block; background:#e8f3ff; color:var(--blue); font-size:13px; font-weight:700;
+    padding:4px 10px; border-radius:6px; margin-bottom:12px;}
+  h1{font-size:26px; font-weight:800; letter-spacing:-.5px;}
+  .sub{color:var(--gray); font-size:14px; margin-top:6px;}
+  .hero{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:28px 0;}
+  .card{background:#fff; border:1px solid var(--line); border-radius:14px; padding:18px 16px;}
+  .card .k{font-size:12px; color:var(--gray); font-weight:600;}
+  .card .v{font-size:26px; font-weight:800; margin-top:6px; letter-spacing:-.5px;}
+  .card .v small{font-size:14px; font-weight:600; color:var(--gray);}
+  .pos{color:var(--pos)} .neg{color:var(--neg)}
+  h2{font-size:18px; font-weight:800; margin:38px 0 14px; letter-spacing:-.3px;
+    display:flex; align-items:center; gap:8px;}
+  h2::before{content:""; width:4px; height:18px; background:var(--blue); border-radius:2px;}
+  table{width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--line);
+    border-radius:12px; overflow:hidden; font-size:14px;}
+  th,td{padding:11px 14px; text-align:right; border-bottom:1px solid var(--line);}
+  th:first-child,td:first-child{text-align:left;}
+  thead th{background:var(--soft); font-weight:700; color:#4e5968; font-size:13px;}
+  tbody tr:last-child td{border-bottom:none;}
+  .total td{font-weight:800; background:#fbfcfe;}
+  .hl{background:#e8f3ff !important;}
+  .note{font-size:13px; color:#4e5968; background:#fff; border:1px solid var(--line);
+    border-left:3px solid var(--blue); border-radius:8px; padding:14px 16px; margin-top:14px;}
+  .note b{color:var(--ink);}
+  ul{margin:10px 0 0 2px; padding-left:18px; font-size:14px; color:#333d4b;}
+  li{margin-bottom:6px;}
+  .pill{font-size:12px; font-weight:700; padding:2px 8px; border-radius:20px;}
+  .pill.g{background:#e6f7ee; color:var(--pos);} .pill.r{background:#fdecee; color:var(--neg);}
+  .pill.b{background:#e8f3ff; color:var(--blue);}
+  .concl{background:linear-gradient(135deg,#3182f6,#1b64da); color:#fff; border-radius:16px;
+    padding:24px 26px; margin:36px 0 0;}
+  .concl h3{font-size:16px; margin-bottom:8px;}
+  .concl p{font-size:15px; opacity:.95;}
+  .concl .big{font-size:22px; font-weight:800; margin-top:4px;}
+  footer{margin-top:40px; padding-top:18px; border-top:1px solid var(--line);
+    font-size:12px; color:var(--gray); line-height:1.7;}
+  .flow{font-size:13px; color:var(--gray); font-family:monospace; background:var(--soft);
+    padding:10px 12px; border-radius:8px; margin-top:8px; word-break:break-all;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="tag">Toss · Cozy Tiles</span>
+    <h1>출석부 프로모션 — 효과 분석</h1>
+    <div class="sub">운영 구간 2026-03-23 ~ 04-30 (39일) · <code>login_new</code> 일일 로그인 스트릭 프로모션 · is_dev 제외</div>
+  </header>
+
+  <div class="concl" style="margin:24px 0 4px">
+    <h3>종합 결론</h3>
+    <p>보상 비용 <b>203,770₩</b>을 투입해 순증분 광고 수익 약 <b>62만원</b>을 창출한</p>
+    <p class="big">순증분 ROAS ≈ 3.0배 · ROI +200% 의 흑자 캠페인</p>
+  </div>
+
+  <div class="hero">
+    <div class="card">
+      <div class="k">보상 비용</div>
+      <div class="v">203,770<small>₩</small></div>
+    </div>
+    <div class="card">
+      <div class="k">순증분 광고 수익 (중심)</div>
+      <div class="v pos">≈620,000<small>₩</small></div>
+    </div>
+    <div class="card">
+      <div class="k">순증분 ROAS</div>
+      <div class="v pos">3.0<small>배 (+200%)</small></div>
+    </div>
+  </div>
+
+  <h2>1 · 프로모션 식별 &amp; 규모</h2>
+  <div class="flow">출석부 = <b>login_new</b> 일일 로그인 스트릭 · 매일 접속 시 1→7일차 보상 · 팝업 8250 / 수령 8251(data.day)</div>
+  <table style="margin-top:14px">
+    <thead><tr><th>구분</th><th>유저 수</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>팝업 도달 유저</td><td>13,085</td><td>기간 내 8250 노출</td></tr>
+      <tr class="hl"><td>보상 수령자 (참여자)</td><td>9,064</td><td>도달의 69.3% · ROI 기준</td></tr>
+      <tr><td>총 수령 건수</td><td>25,370</td><td>인당 2.8건</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><b>핵심:</b> 출석 참여자가 프로모션 기간 <b>게임 전체 광고 노출의 99.95%</b>를 생성합니다. 비수령자 5,431명은 활성일 2.2일·광고 노출 사실상 0(조기 이탈층). 즉 <b>출석 참여층 = 게임의 수익화 모집단</b>과 일치하며, ROI 기준은 보상 수령자 9,064명입니다.</div>
+
+  <h2>2 · 보상 비용 (일차별)</h2>
+  <table>
+    <thead><tr><th>출석 일차</th><th>지급액</th><th>수령 인원</th><th>비용</th></tr></thead>
+    <tbody>
+      <tr><td>1일차</td><td>5₩</td><td>9,063</td><td>45,330₩</td></tr>
+      <tr><td>2일차</td><td>5₩</td><td>4,449</td><td>22,250₩</td></tr>
+      <tr><td>3일차</td><td>10₩</td><td>3,238</td><td>32,380₩</td></tr>
+      <tr><td>4일차</td><td>10₩</td><td>2,645</td><td>26,450₩</td></tr>
+      <tr><td>5일차</td><td>10₩</td><td>2,239</td><td>22,400₩</td></tr>
+      <tr><td>6일차</td><td>10₩</td><td>1,966</td><td>19,660₩</td></tr>
+      <tr><td>7일차</td><td>20₩</td><td>1,764</td><td>35,300₩</td></tr>
+      <tr class="total"><td>합계</td><td>—</td><td>완주율 19.5%</td><td>203,770₩</td></tr>
+    </tbody>
+  </table>
+  <div class="note">완주 퍼널: 1일차 9,063명 → 7일차 1,764명. <b>1→2일차에서 51% 이탈</b>(9,063→4,449)이 최대 누수로, 여기만 보완하면 완주율(19.5%)을 끌어올릴 여지가 큼.</div>
+
+  <h2>3 · 광고 수익 (참여자 9,064명 · 노출 × eCPM 환산)</h2>
+  <table>
+    <thead><tr><th>광고 유형</th><th>노출</th><th>실현 eCPM(평균)</th><th>수익</th></tr></thead>
+    <tbody>
+      <tr><td>리워드</td><td>70,824</td><td>≈6,000₩</td><td>≈425,000₩</td></tr>
+      <tr><td>전면</td><td>245,368</td><td>≈4,700₩</td><td>≈1,153,000₩</td></tr>
+      <tr class="total"><td>합계 (gross)</td><td>316,192</td><td>—</td><td>≈1,578,000₩</td></tr>
+    </tbody>
+  </table>
+  <div class="note">IAP 매출은 사실상 $0 — 코지타일즈 토스 수익은 <b>전액 광고 수익</b>(리워드·전면). 검산: 리워드 노출 = <code>4210_RV_FINISH</code>, 전면 = <code>4010_INTERSTITIAL_AD_FINISH</code> (대시보드 "광고 노출"과 일치 확인).</div>
+
+  <h2>4 · 순증분 효과 (이중차분 DiD)</h2>
+  <div class="note" style="border-left-color:var(--pos)">
+    <b>쉽게 말하면 👇</b>
+    <ul style="margin-top:8px">
+      <li>참여자 광고 수익 전부가 출석부 덕은 아님 — 일부는 <b>어차피 봤을 광고</b></li>
+      <li>그래서 출석 보상 효과가 거의 없는 <b>고참 유저(대조군)</b>와 비교</li>
+      <li>고참은 같은 기간 자연히 <b>−7% 감소</b> → 출석부가 없었다면 타겟도 비슷하게 줄었을 것</li>
+      <li>그런데 타겟(초기 유저)은 오히려 <b>+52% 증가</b> → 이 <b>차이</b>가 출석부가 추가로 만든 효과</li>
+      <li>이 추가 비율(리워드 52%·전면 35%)을 참여자 광고 수익에 적용 = <b>순증분 ≈62만원</b></li>
+    </ul>
+  </div>
+  <table>
+    <thead><tr><th>그룹 (인당 광고노출)</th><th>실행 전(14일)</th><th>실행 후(14일)</th><th>변화</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td>타겟 (초기, 로그인≤10) · 5,921명</td><td>2.04</td><td>3.10</td><td><span class="pill g">+52.0%</span></td></tr>
+      <tr><td>중간 (로그인 11–24) · 318명</td><td>37.92</td><td>38.19</td><td><span class="pill b">+0.7%</span></td></tr>
+      <tr><td>대조 (고참, 로그인≥25) · 430명</td><td>126.23</td><td>116.98</td><td><span class="pill r">−7.3%</span></td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:13px;color:var(--gray);margin:14px 0 8px">대조군 추세를 반사실로 적용한 광고 유형별 증분 비율(타겟군 기준):</p>
+  <table>
+    <thead><tr><th>광고</th><th>실측 후(인당)</th><th>반사실</th><th>증분</th><th>증분 비율</th></tr></thead>
+    <tbody>
+      <tr><td>리워드</td><td>0.71</td><td>0.34</td><td>0.37</td><td>51.8%</td></tr>
+      <tr><td>전면</td><td>2.39</td><td>1.55</td><td>0.84</td><td>35.2%</td></tr>
+    </tbody>
+  </table>
+  <div class="note">같은 달력·eCPM 환경에서 <b>타겟군은 +52% 증가, 미타겟 고참은 −7% 감소</b> → 출석부가 분명한 divergence 유발. 위 증분 비율을 참여자 광고 수익에 적용 시 <b>순증분 ≈ 620,000₩</b> (리워드 221K + 전면 403K). PBM 4월 프로모션 증분비율(리워드 53%·전면 35%)과 거의 일치해 신뢰도가 높음.</div>
+
+  <footer>
+    <b>데이터 출처</b> · game-log-359704.raw.cozy_tiles_toss · 토스 광고 대시보드 eCPM(₩, 노출당)<br>
+    <b>방법론</b> · 운영구간 = 8250_TOSS_LOGIN_PROMOTION_POPUP 출현 일자 · 비용 = 8251 수령건 × 일차별 보상[5·5·10·10·10·10·20] · 수익 = 노출(RV·전면 FINISH) × eCPM · 순증분 = 초기유저(처치) vs 고참(대조) 이중차분(pre 3/9–3/22 vs post 3/23–4/5, pre 활성 패널 고정 → 4월 UA 신규유입 제외)<br>
+    <b>제외</b> · is_dev<br>
+    <b>한계</b> · gross→net 환산은 DiD 평행추세 가정에 의존 · 4월 외형적 트래픽 급증분 전부를 출석부로 귀속하면 과대평가(동기간 UA 동시 운영) · 신규 유입 미계상(과소추정 방향)<br>
+    생성일 2026-06-01
+  </footer>
+</div>
+</body>
+</html>
