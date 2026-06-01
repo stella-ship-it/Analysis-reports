@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PBM(토스) IAP 결제 전환 분석</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#fff; --ink:#1a1d21; --sub:#5b6168;
+    --line:#e4e7eb; --accent:#3b6ef5; --warn:#d97706; --bad:#dc2626; --good:#16a34a;
+    --chip:#eef2ff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Malgun Gothic",sans-serif;
+    line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:860px; margin:0 auto; padding:40px 22px 80px;}
+  header.top{margin-bottom:28px;}
+  .kicker{font-size:13px; color:var(--accent); font-weight:700; letter-spacing:.04em;}
+  h1{font-size:26px; margin:6px 0 4px; letter-spacing:-.02em;}
+  .period{color:var(--sub); font-size:14px;}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:22px 24px; margin:18px 0; box-shadow:0 1px 2px rgba(0,0,0,.03);
+  }
+  h2{font-size:18px; margin:0 0 14px; display:flex; align-items:center; gap:8px;}
+  h2 .em{font-size:20px;}
+  .tldr{background:linear-gradient(180deg,#f0f5ff,#fff); border-color:#cfe0ff;}
+  ul{margin:8px 0; padding-left:0; list-style:none;}
+  li{position:relative; padding-left:20px; margin:7px 0;}
+  li::before{content:"•"; position:absolute; left:4px; color:var(--accent); font-weight:700;}
+  .num li{padding-left:30px; margin:10px 0;}
+  .num{counter-reset:n;}
+  .num li::before{counter-increment:n; content:counter(n); left:0; top:0;
+    width:22px; height:22px; background:var(--accent); color:#fff; font-size:12px;
+    border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700;}
+  b,strong{font-weight:700;}
+  .hl{background:#fff3cd; padding:0 3px; border-radius:3px;}
+  .hl-bad{color:var(--bad); font-weight:700;}
+  .hl-good{color:var(--good); font-weight:700;}
+  table{width:100%; border-collapse:collapse; margin:6px 0; font-size:14px;}
+  th,td{padding:9px 12px; text-align:left; border-bottom:1px solid var(--line);}
+  th{background:#fafbfc; color:var(--sub); font-weight:600; font-size:12.5px; letter-spacing:.02em;}
+  td.r,th.r{text-align:right; font-variant-numeric:tabular-nums;}
+  tr:last-child td{border-bottom:none;}
+  .mono{font-family:"SF Mono",ui-monospace,Menlo,monospace; font-size:12.5px; background:#f0f1f3; padding:1px 5px; border-radius:4px;}
+  .warnbox{background:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:12px 16px; margin:14px 0; font-size:14px;}
+  .warnbox b{color:var(--warn);}
+  .note{font-size:13px; color:var(--sub);}
+  .zero{color:var(--bad); font-weight:700;}
+  .pct{color:var(--sub);}
+  .chip{display:inline-block; background:var(--chip); color:var(--accent); font-size:12px;
+    font-weight:600; padding:2px 9px; border-radius:20px; margin-left:6px;}
+  footer{color:var(--sub); font-size:12.5px; text-align:center; margin-top:30px;}
+  .divider{height:1px; background:var(--line); margin:4px 0 0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="kicker">DATA REPORT · 토스 데이터 기준</div>
+    <h1>Puzzle Block Master — IAP 결제 전환 분석</h1>
+    <div class="period">분석 기간: 2026-05-18 ~ 05-31 · 게임: PBM(Toss) · <span class="mono">raw.puzzle_block_master_toss</span></div>
+  </header>
+
+  <!-- TL;DR -->
+  <section class="card tldr">
+    <h2><span class="em">⚡</span> 핵심 요약</h2>
+    <ul>
+      <li>신규 IAP 4종 <b>노출은 정상 작동</b>하나, 실 구매는 <b><span class="mono">revive_instant</span> 1건 · 패스 3종 0건</b> → 퍼널이 아니라 <span class="hl-bad">오디언스의 지불 의향(~0)</span>이 근본 원인</li>
+      <li>게임 <b>전체 IAP 과금자도 월 4명</b>(MAU 22,606 대비 <span class="hl-bad">≈ 0.02%</span>) — <b>광고 수익형 구조</b>(유저당 광고 시청 200~545회)라 <b>IAP는 보조 라인</b></li>
+      <li><b style="color:var(--bad);">근본 결론</b> — 현 IAP가 파는 <b>부활·아이템·진행은 전부 광고로 공짜</b> → 채널·타겟·가격이 아니라 <b>상품 기획의 문제</b>. <b>비소모성 가치(외형·영구·한정) 신설 등 기획 레벨 수정 없이는 IAP 유의미 수익은 어려움</b></li>
+    </ul>
+  </section>
+
+  <!-- 대상 상품 -->
+  <section class="card">
+    <h2><span class="em">🎁</span> 대상 상품 (추가일)</h2>
+    <table>
+      <thead><tr><th>상품</th><th>추가일</th><th class="r">가격</th><th>내용</th></tr></thead>
+      <tbody>
+        <tr><td><span class="mono">revive_pass_7d</span></td><td>5/18</td><td class="r">₩4,000</td><td>광고면제 부활 패스</td></tr>
+        <tr><td><span class="mono">full_pass_7d</span></td><td>5/19</td><td class="r">₩5,000</td><td>통합 패스</td></tr>
+        <tr><td><span class="mono">revive_instant</span></td><td>5/20</td><td class="r">₩500</td><td>광고 없는 부활 5회</td></tr>
+        <tr><td><span class="mono">item_pass_7d</span></td><td>5/21</td><td class="r">₩2,000</td><td>아이템 패스</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 퍼널 -->
+  <section class="card">
+    <h2><span class="em">📉</span> 실제 유저 퍼널 <span class="chip">5/18~5/31 · 테스트 제외</span></h2>
+    <table>
+      <thead><tr><th>상품</th><th class="r">노출 UU</th><th class="r">결제창 진입</th><th class="r">실 구매</th></tr></thead>
+      <tbody>
+        <tr><td><span class="mono">revive_instant</span></td><td class="r">1,384</td><td class="r">257 <span class="pct">(18.6%)</span></td><td class="r">1</td></tr>
+        <tr><td><span class="mono">item_pass_7d</span></td><td class="r">867</td><td class="r">56 <span class="pct">(6.5%)</span></td><td class="r"><span class="zero">0</span></td></tr>
+        <tr><td><span class="mono">revive_pass_7d</span></td><td class="r">553</td><td class="r">27 <span class="pct">(4.9%)</span></td><td class="r"><span class="zero">0</span></td></tr>
+        <tr><td><span class="mono">full_pass_7d</span></td><td class="r">304</td><td class="r">22 <span class="pct">(7.2%)</span></td><td class="r"><span class="zero">0</span></td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li><b>2중 누수</b>: ① 노출→결제창 진입에서 <b>81~95% 이탈</b> + ② 결제창→완료에서 <b>거의 100% 취소</b></li>
+      <li>실패 사유는 <b>전부 <span class="mono">USER_CANCELED</span></b> (결제창 도달 후 취소) — <b>기술 결함 아님</b></li>
+    </ul>
+  </section>
+
+  <!-- 핵심 진단 -->
+  <section class="card">
+    <h2><span class="em">🔍</span> 핵심 진단</h2>
+    <ul>
+      <li><b>지불 의향 자체가 ~0</b> — 5월 전체 IAP 과금자 4명, MAU 22,606 대비 전환 <span class="hl-bad">≈ 0.02%</span></li>
+      <li>타겟팅은 정상 작동했으나, 선별 기준이 <b>광고 시청량</b> = "돈 대신 시간 쓰는 사람" = <span class="hl-bad">무과금 신호</span>를 골라냄</li>
+      <li><b>현 IAP 4종(부활·아이템·진행)은 모두 광고로 무료 획득 가능</b> → 돈이 <i>유일하게</i> 해결하는 고통이 없어 <b>어떤 타겟·채널·가격으로도 전환 한계</b> (타겟 신호를 바꿔도 무료 광고가 수요를 다 흡수)</li>
+      <li><span class="hl-bad">IAP 부진은 운영(채널·타겟)이 아니라 상품 기획 차원의 문제</span> — 광고에 대체재 없는 가치(외형·영구 해금·경쟁/한정 콘텐츠) 신설이 선결 과제</li>
+      <li class="note">단, 캐주얼 토스 오디언스 특성상 기획 개선 후에도 IAP는 <b>보조 라인</b>에 머물 가능성 — 투입 결정은 광고 매출 대비 규모 비교가 먼저</li>
+    </ul>
+  </section>
+
+  <!-- 채널 비교 -->
+  <section class="card">
+    <h2><span class="em">🔀</span> 채널 비교 — pull &gt; push <span class="chip">5월 전체 · 전체 IAP</span></h2>
+    <table>
+      <thead><tr><th>경로</th><th class="r">도달</th><th class="r">시도</th><th class="r">과금자</th></tr></thead>
+      <tbody>
+        <tr><td>상점 <b>(pull)</b></td><td class="r">2,153</td><td class="r">599 <span class="pct">(27.8%)</span></td><td class="r"><span class="hl-good">3</span></td></tr>
+        <tr><td>팝업 <b>(push)</b></td><td class="r">1,736</td><td class="r">326 <span class="pct">(18.8%)</span></td><td class="r">1</td></tr>
+      </tbody>
+    </table>
+    <ul>
+      <li><b>월 과금자 4명 중 3명이 상점 경로</b> → 돈 쓰는 소수는 스스로 상점에 들어온 사람</li>
+      <li>상점 방문자 시도율 27.8% &gt; 팝업 18.8% — <b>자발적 진입 = 고의향 트래픽</b></li>
+      <li class="note">※ 채널 단위 비교(같은 월간·실제 유저). 상점은 기존 상품 포함, 팝업은 신규 4종 — 동일 상품 비교가 아니라 <b>채널의 전환 행동</b> 비교</li>
+    </ul>
+  </section>
+
+  <!-- 권고 액션 -->
+  <section class="card">
+    <h2><span class="em">✅</span> 권고 액션</h2>
+
+    <h3 style="font-size:14px;color:var(--sub);margin:8px 0 6px;">단기 (운영 — 즉시 가능, 효과 제한적)</h3>
+    <ul>
+      <li><b>인게임 메뉴 상점 추가</b> — pull 트래픽이 더 잘 전환, 광고 미잠식, 숙고형 패스에 적합. <span class="note">단 동일 소모성 상품을 진열하는 한 효과는 제한적 → "접근성 개선"으로 보수적 포지셔닝</span></li>
+    </ul>
+
+    <h3 style="font-size:14px;color:var(--sub);margin:18px 0 6px;">근본 (기획 — 선결 과제)</h3>
+    <ul>
+      <li><b>광고에 대체재 없는 상품 카테고리 신설</b> — 외형/스킨·영구 해금·경쟁/사회적·한정 콘텐츠 등. <span class="note">소모성(부활·아이템·진행)은 광고와 항상 경쟁하므로 IAP로 부적합 → 비소모성 가치 설계가 IAP 성립의 전제</span></li>
+    </ul>
+  </section>
+
+  <!-- 구매자 프로파일 -->
+  <section class="card">
+    <h2><span class="em">👤</span> <span class="mono">revive_instant</span> 실 구매자 프로파일 <span class="chip">5/31 · 1명</span></h2>
+    <div class="warnbox" style="background:#f0f5ff;border-color:#cfe0ff;">
+      <b style="color:var(--accent);">한 줄 요약</b> — 신규 아님. <b>1주차 매일 접속 헤비 유저</b>가 평소보다 2배 몰입한 날, 무료 부활을 다 쓰고도 못 놓아 <b>인생 첫 결제(₩500)</b>.
+    </div>
+
+    <h3 style="font-size:14px;color:var(--sub);margin:16px 0 6px;">유저 정체성</h3>
+    <table>
+      <tbody>
+        <tr><td>가입일</td><td>2026-05-24 (구매 시 <b>가입 7일차</b>) — 신규 아님</td></tr>
+        <tr><td>접속 패턴</td><td>5/24~5/31 <b>8일 연속 매일 접속</b> (100% 리텐션)</td></tr>
+        <tr><td>누적 플레이</td><td><b>116판</b> (로그인 15회, 일평균 ~16판) — 헤비 성향</td></tr>
+        <tr><td>누적 광고</td><td>보상형 RV 14회 / 전면 IT 29회 — 광고도 적극 소비</td></tr>
+        <tr><td>첫 결제 여부</td><td><span class="mono">lifetime_purchase_count = 1</span> → <b>이 게임 첫 과금(FTD)</b></td></tr>
+        <tr><td>환경</td><td>iOS · KR · v411 · 유입 <span class="mono">organic_store</span></td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size:14px;color:var(--sub);margin:18px 0 6px;">구매 당일(5/31) — 평소보다 과몰입</h3>
+    <ul>
+      <li><b>34판</b> 플레이 → 7일 평균(16판)의 <b>약 2배</b>, 단일 일 최다</li>
+      <li>보상형 광고 <b>8회</b> + 전면광고 8회 시청, 이어하기 성공 <b>9회</b>(RV로 4회), 블록 재배치 5회</li>
+      <li>구매 시점: <b>22:56</b>, 세션 진입 <b>약 21분(1,249초)</b> 후, 트리거 <span class="mono">revive_limit</span>(무료 부활 한도 소진 직후)</li>
+    </ul>
+
+    <div class="warnbox">
+      <b style="color:var(--warn);">시사점</b> — 신규 획득이 아니라 <b>이미 몰입한 유저의 "한 판 더" 욕구를 결제로 전환</b>시킨 케이스. <span class="mono">revive_limit</span> 노출 타이밍은 적중. 단 <b>1명 표본</b>이라 일반화는 불가.
+    </div>
+  </section>
+
+  <footer>
+    생성: Claude Code · 토스 데이터 기준 · 테스트 계정(<span class="mono">player_id -2, 1720675736985696</span>) 및 <span class="mono">is_dev=true</span> 제외
+  </footer>
+
+</div>
+</body>
+</html>
