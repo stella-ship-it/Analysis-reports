@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>토스 오가닉 유저 퀄리티 & 매출 구조 분석 — PBM · Cozy Tiles</title>
+<style>
+  :root{
+    --toss:#2f6bff; --toss-soft:#e8f0ff;
+    --fb:#8a93a6; --fb-soft:#eef0f4;
+    --ink:#1a1f29; --mut:#6b7280; --line:#e6e8ee; --bg:#f6f7fb;
+    --good:#16a34a; --bad:#dc2626; --warn:#d97706; --pbm:#7c3aed; --ct:#0ea5a4;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard",sans-serif;
+       background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1020px;margin:0 auto;padding:40px 28px 80px}
+  header.top{margin-bottom:24px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.12em;color:var(--toss);text-transform:uppercase}
+  h1{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:6px 0 8px}
+  .sub{color:var(--mut);font-size:14.5px}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12px;color:var(--mut)}
+  .chip b{color:var(--ink)}
+
+  section{background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px;margin-top:20px;
+          box-shadow:0 1px 2px rgba(20,30,60,.03)}
+  .part{font-size:12px;font-weight:800;letter-spacing:.1em;color:var(--toss);text-transform:uppercase;margin-bottom:6px}
+  h2{font-size:20px;font-weight:800;letter-spacing:-.01em;margin-bottom:4px}
+  /* 한 줄 요약 */
+  .summary{display:flex;gap:11px;align-items:flex-start;background:#f7f9ff;border:1px solid #dce6ff;
+           border-radius:11px;padding:13px 16px;margin:14px 0 20px;font-size:14px}
+  .summary .tag{flex:none;font-size:11px;font-weight:800;color:#fff;background:var(--toss);border-radius:6px;padding:3px 8px;margin-top:1px}
+  .summary p{margin:0}
+  .summary b{color:var(--ink)}
+
+  /* ===== HERO 핵심결론 ===== */
+  .hero{background:linear-gradient(135deg,#0f2c6b,#2f6bff);color:#fff;border:none;padding:30px}
+  .hero .eyebrow{color:#bcd2ff}
+  .hero h2{color:#fff;font-size:23px;line-height:1.4;margin:8px 0 20px}
+  .hero h2 u{text-decoration-color:#9cc0ff;text-underline-offset:4px}
+  .points{display:flex;flex-direction:column;gap:12px}
+  .point{display:flex;gap:14px;align-items:flex-start;background:rgba(255,255,255,.10);
+         border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:15px 17px}
+  .point .ic{flex:none;font-size:22px;line-height:1.2}
+  .point .tx{font-size:15px;color:#eaf1ff}
+  .point .tx b{color:#fff;font-weight:800}
+  .point .big{font-weight:800;color:#fff}
+
+  /* 표 */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:4px}
+  th,td{padding:11px 10px;text-align:right;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  thead th{font-size:12px;color:var(--mut);font-weight:700;border-bottom:2px solid var(--line);white-space:nowrap}
+  .colgrp-pbm{color:var(--pbm)} .colgrp-ct{color:var(--ct)}
+  tbody td.metric{font-weight:600;color:var(--ink)}
+  tbody td.metric span{display:block;font-weight:400;font-size:11px;color:var(--mut)}
+  td.toss{background:var(--toss-soft);font-weight:700}
+  td.fb{color:#4b5260}
+  tr.section-row td{background:#fafbfd;font-weight:700;font-size:11.5px;color:var(--mut);
+                    text-transform:uppercase;letter-spacing:.05em;text-align:left}
+  .win{display:inline-block;margin-left:5px;font-size:10.5px;font-weight:800;color:var(--good);
+       background:#e9f7ef;border-radius:6px;padding:1px 6px;vertical-align:middle}
+
+  /* ===== 매출 수식 분해 ===== */
+  .formula{text-align:center;font-size:16px;font-weight:700;color:var(--ink);background:#fafbfd;
+           border:1px dashed var(--line);border-radius:12px;padding:16px;margin:6px 0 20px}
+  .formula b{color:var(--toss)} .formula .op{color:var(--mut);margin:0 8px;font-weight:400}
+  .factors{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .factor{border:1px solid var(--line);border-radius:13px;overflow:hidden;display:flex;flex-direction:column}
+  .factor .fh{padding:12px 15px 10px;font-weight:800;font-size:14px;border-bottom:1px solid var(--line)}
+  .factor .fh small{display:block;font-weight:500;font-size:11px;color:var(--mut);margin-top:2px}
+  .factor .vs{display:flex;justify-content:space-between;align-items:center;padding:14px 15px;font-size:13px;flex:1}
+  .factor .vs .cell{text-align:center;flex:1}
+  .factor .vs .cell .lab{font-size:11px;color:var(--mut)}
+  .factor .vs .cell .v{font-size:18px;font-weight:800;margin-top:2px}
+  .factor .vs .mid{flex:none;align-self:center;color:var(--mut);font-size:13px;padding:0 6px}
+  .factor .verdict-bar{padding:9px 15px;font-size:12.5px;font-weight:700;color:#fff}
+  .factor.win-toss .verdict-bar{background:var(--toss)}
+  .factor.win-fb .verdict-bar{background:var(--bad)}
+  .factor .v.t{color:var(--toss)} .factor .v.f{color:#4b5260}
+
+  /* 격차 칩 */
+  .gaprow{display:flex;gap:14px;flex-wrap:wrap;margin-top:18px}
+  .gapcard{flex:1;min-width:200px;border:1px solid var(--line);border-radius:12px;padding:15px 17px;background:linear-gradient(180deg,#fff,#fdfcff)}
+  .gapcard .g-lab{font-size:12.5px;color:var(--mut);font-weight:600}
+  .gapcard .g-big{font-size:30px;font-weight:800;color:var(--bad);letter-spacing:-.02em;margin:2px 0}
+  .gapcard .g-sub{font-size:12px;color:var(--mut)}
+  .gapcard .g-decomp{font-size:12px;color:var(--ink);margin-top:6px;background:#f6f7fb;border-radius:7px;padding:6px 9px}
+
+  /* 오해 Q/A */
+  .myth{border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:11px;padding:15px 17px;margin-bottom:13px}
+  .myth .q{font-size:14.5px;font-weight:800;color:var(--ink);margin-bottom:5px}
+  .myth .q .x{color:var(--bad);margin-right:6px}
+  .myth .a{font-size:13.5px;color:#3b424f}
+  .myth .a .ok{color:var(--good);font-weight:800}
+  .myth .a b{color:var(--ink)}
+
+  /* 레버 */
+  .lever{background:linear-gradient(135deg,#4c1d95,#7c3aed);color:#fff;border:none;border-radius:16px;padding:26px}
+  .lever .eyebrow{color:#e9d5ff}
+  .lever h2{color:#fff;margin-bottom:14px}
+  .lever .lv{display:flex;gap:13px;align-items:flex-start;margin:11px 0;font-size:14.5px;color:#f3e8ff}
+  .lever .lv .n{flex:none;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.2);
+                display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff}
+  .lever .lv b{color:#fff}
+  .lever .muted{color:#d6c7f0;font-size:13px;margin-top:6px;padding-left:37px}
+
+  /* bars */
+  .legend{display:flex;gap:18px;margin:2px 0 16px;font-size:12px;color:var(--mut)}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  .legend i.toss{background:#2f6bff}.legend i.fb{background:#bcc3d0}
+  .bars{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .barblock h4{font-size:13px;margin-bottom:10px;font-weight:700}
+  .barblock h4 small{font-weight:500;color:var(--mut)}
+  .barrow{display:grid;grid-template-columns:58px 1fr 60px;align-items:center;gap:9px;margin:8px 0}
+  .barrow .nm{font-size:11px;color:var(--mut);text-align:right}
+  .track{background:#f0f2f7;border-radius:7px;height:20px;overflow:hidden}
+  .fill{height:100%;border-radius:7px}
+  .fill.toss{background:linear-gradient(90deg,#2f6bff,#5b8bff)}
+  .fill.fb{background:linear-gradient(90deg,#aab2c2,#c3c9d6)}
+  .barrow .val{font-size:12px;font-weight:700}
+
+  details{margin-top:20px;border:1px solid var(--line);border-radius:13px;background:#fff;overflow:hidden}
+  summary{padding:16px 22px;font-weight:800;font-size:15px;cursor:pointer;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary::before{content:"▸ ";color:var(--toss)}
+  details[open] summary::before{content:"▾ "}
+  .det-body{padding:0 22px 22px}
+  .note{font-size:13px;color:var(--mut);margin-top:10px}
+  code{background:#eef1f6;border-radius:5px;padding:1px 6px;font-size:12px;color:#334}
+  footer{margin-top:22px;font-size:12px;color:var(--mut)}
+  footer h3{font-size:13px;color:var(--ink);margin:6px 0 6px}
+  footer ul{margin-left:18px} footer li{margin:4px 0}
+  @media(max-width:780px){.factors{grid-template-columns:1fr}.bars{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="eyebrow">User Quality &amp; Monetization Analysis</div>
+  <h1>토스 오가닉 유저 — 퀄리티는 최상, 매출은 최소</h1>
+  <div class="sub">Puzzle Block Master · Cozy Tiles · 토스 vs Facebook 오가닉 — 유저 퀄리티부터 매출 구조까지</div>
+  <div class="meta">
+    <span class="chip">퀄리티 코호트 <b>2026-05-12~25 (NRU)</b></span>
+    <span class="chip">매출·eCPM <b>2026-05</b></span>
+    <span class="chip">출처 <b>BQ raw · gameteam 시트 · 토스 eCPM_0602</b></span>
+  </div>
+</header>
+
+<!-- ===== 핵심 결론 ===== -->
+<section class="hero">
+  <div class="eyebrow">핵심 결론 (3초 요약)</div>
+  <h2>토스 유저는 질이 가장 좋은데, 매출은 가장 적다.<br>발목 잡는 건 <u>DAU 규모</u>와 <u>eCPM 레벨</u> — 광고를 적게 띄워서가 아니다.</h2>
+  <div class="points">
+    <div class="point">
+      <div class="ic">🏆</div>
+      <div class="tx"><b>유저 질은 FB 압도</b> — 토스 오가닉 유저는 첫날 판수 ~3배, 다음날 재방문(D1) <span class="big">5~8배</span>, 광고 시청률 3~6배. 능동적으로 게임을 찾아 들어온 고관여 유저.</div>
+    </div>
+    <div class="point">
+      <div class="ic">📉</div>
+      <div class="tx"><b>그런데 월매출은 FB의 <span class="big">1/15 ~ 1/161</span></b> — PBM 토스 $3.3K vs FB $50K, CT 토스 $0.4K vs FB $67.5K. 질과 매출이 정반대.</div>
+    </div>
+    <div class="point">
+      <div class="ic">🔑</div>
+      <div class="tx"><b>원인은 두 가지뿐</b> — ① DAU 규모가 작고, ② eCPM이 FB의 <span class="big">1/7</span>. <b>인당 광고 노출은 오히려 토스가 더 많다.</b></div>
+    </div>
+    <div class="point">
+      <div class="ic">💡</div>
+      <div class="tx"><b>eCPM이 낮은 이유</b> — 토스는 100% 한국 유저(FB는 매출의 60~78%가 미국). 한국이 이 장르에서 FB 미국 대비 저단가 시장이라서다 — 토스 광고망 탓이 아니다(FB의 한국 eCPM도 토스와 비슷).</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PART 1: 유저 퀄리티 ===== -->
+<section>
+  <div class="part">Part 1 · 유저 퀄리티</div>
+  <h2>토스 오가닉 유저는 FB보다 훨씬 잘 들어오고, 잘 논다</h2>
+  <div class="summary">
+    <span class="tag">요약</span>
+    <p>같은 게임의 오가닉 신규 유저(NRU)를 비교했다. <b>판수·광고 시청·재방문 모든 지표에서 토스가 FB를 이긴다.</b> 토스는 스토어에서 직접 검색해 들어온 유저, FB는 피드·게임메뉴에서 흘러든 유저라 관여도 차이가 크다.</p>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>지표</th>
+        <th class="colgrp-pbm">PBM 토스</th><th class="colgrp-pbm">PBM FB</th>
+        <th class="colgrp-ct">CT 토스</th><th class="colgrp-ct">CT FB</th></tr>
+    </thead>
+    <tbody>
+      <tr class="section-row"><td colspan="5">규모</td></tr>
+      <tr><td class="metric">신규 유저(NRU) 수</td><td class="toss">3,972</td><td class="fb">8,295</td><td class="toss">448</td><td class="fb">20,152</td></tr>
+      <tr class="section-row"><td colspan="5">첫날(D0) 참여도</td></tr>
+      <tr><td class="metric">인당 판수 (평균)</td><td class="toss">6.9 <span class="win">승</span></td><td class="fb">2.4</td><td class="toss">9.0 <span class="win">승</span></td><td class="fb">3.0</td></tr>
+      <tr><td class="metric">광고 시청률 <span>1회 이상</span></td><td class="toss">36.4% <span class="win">승</span></td><td class="fb">11.7%</td><td class="toss">65.9% <span class="win">승</span></td><td class="fb">11.7%</td></tr>
+      <tr class="section-row"><td colspan="5">재방문 (리텐션)</td></tr>
+      <tr><td class="metric">다음날 재방문 (D1)</td><td class="toss">44.4% <span class="win">승</span></td><td class="fb">8.6%</td><td class="toss">49.9% <span class="win">승</span></td><td class="fb">6.2%</td></tr>
+      <tr><td class="metric">7일 후 재방문 (D7)</td><td class="toss">12.7% <span class="win">승</span></td><td class="fb">2.8%</td><td class="toss">4.4% <span class="win">승</span></td><td class="fb">1.9%</td></tr>
+      <tr class="section-row"><td colspan="5">누적 (관찰기간, 우측절단 有)</td></tr>
+      <tr><td class="metric">인당 누적 판수</td><td class="toss">36.5 <span class="win">승</span></td><td class="fb">7.8</td><td class="toss">27.6 <span class="win">승</span></td><td class="fb">7.6</td></tr>
+      <tr><td class="metric">인당 누적 광고수</td><td class="toss">15.0 <span class="win">승</span></td><td class="fb">3.8</td><td class="toss">22.0 <span class="win">승</span></td><td class="fb">4.5</td></tr>
+    </tbody>
+  </table>
+
+  <h4 style="font-size:13px;margin:22px 0 4px;font-weight:800">대표 지표 한눈에</h4>
+  <div class="legend"><span><i class="toss"></i>토스</span><span><i class="fb"></i>Facebook</span></div>
+  <div class="bars">
+    <div class="barblock">
+      <h4>다음날 재방문 (D1)</h4>
+      <div class="barrow"><div class="nm">PBM 토스</div><div class="track"><div class="fill toss" style="width:89%"></div></div><div class="val">44.4%</div></div>
+      <div class="barrow"><div class="nm">PBM FB</div><div class="track"><div class="fill fb" style="width:17%"></div></div><div class="val">8.6%</div></div>
+      <div class="barrow"><div class="nm">CT 토스</div><div class="track"><div class="fill toss" style="width:100%"></div></div><div class="val">49.9%</div></div>
+      <div class="barrow"><div class="nm">CT FB</div><div class="track"><div class="fill fb" style="width:12%"></div></div><div class="val">6.2%</div></div>
+    </div>
+    <div class="barblock">
+      <h4>첫날 광고 시청률</h4>
+      <div class="barrow"><div class="nm">PBM 토스</div><div class="track"><div class="fill toss" style="width:55%"></div></div><div class="val">36.4%</div></div>
+      <div class="barrow"><div class="nm">PBM FB</div><div class="track"><div class="fill fb" style="width:18%"></div></div><div class="val">11.7%</div></div>
+      <div class="barrow"><div class="nm">CT 토스</div><div class="track"><div class="fill toss" style="width:100%"></div></div><div class="val">65.9%</div></div>
+      <div class="barrow"><div class="nm">CT FB</div><div class="track"><div class="fill fb" style="width:18%"></div></div><div class="val">11.7%</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PART 2: 매출 분해 ===== -->
+<section>
+  <div class="part">Part 2 · 그럼 왜 매출은 적은가</div>
+  <h2>매출을 3개 요소로 쪼개보면 답이 나온다</h2>
+  <div class="summary">
+    <span class="tag">요약</span>
+    <p>매출은 <b>① 유저 수 × ② 유저당 광고 노출 × ③ 광고 단가(eCPM)</b>로 결정된다. 토스는 ②(노출)는 FB보다 많지만, <b>①(규모)과 ③(단가)에서 크게 진다.</b> 이 두 가지가 매출을 누른다.</p>
+  </div>
+
+  <div class="formula">
+    매출 <span class="op">=</span> <b>① DAU</b> <span class="op">×</span> <b>② 인당 노출</b> <span class="op">×</span> <b>③ eCPM</b>
+  </div>
+
+  <div class="factors">
+    <div class="factor win-fb">
+      <div class="fh">① DAU (유저 수)<small>하루 활성 유저</small></div>
+      <div class="vs">
+        <div class="cell"><div class="lab">토스</div><div class="v t">2,800<br><span style="font-size:11px;font-weight:600;color:var(--mut)">/ 520</span></div></div>
+        <div class="mid">vs</div>
+        <div class="cell"><div class="lab">FB</div><div class="v f">10,337<br><span style="font-size:11px;font-weight:600;color:var(--mut)">/ 30,160</span></div></div>
+      </div>
+      <div class="verdict-bar">FB 4~58배 큼 — 최대 원인</div>
+    </div>
+    <div class="factor win-toss">
+      <div class="fh">② 인당 노출 / 일<small>imps per DAU (실측)</small></div>
+      <div class="vs">
+        <div class="cell"><div class="lab">토스</div><div class="v t">16~22</div></div>
+        <div class="mid">vs</div>
+        <div class="cell"><div class="lab">FB</div><div class="v f">8.5~10</div></div>
+      </div>
+      <div class="verdict-bar">토스 1.6~2배 많음 — 원인 아님</div>
+    </div>
+    <div class="factor win-fb">
+      <div class="fh">③ eCPM (광고 단가)<small>블렌디드, USD</small></div>
+      <div class="vs">
+        <div class="cell"><div class="lab">토스</div><div class="v t">$2.60<br><span style="font-size:11px;font-weight:600;color:var(--mut)">/ $1.21</span></div></div>
+        <div class="mid">vs</div>
+        <div class="cell"><div class="lab">FB</div><div class="v f">$17.92<br><span style="font-size:11px;font-weight:600;color:var(--mut)">/ $7.20</span></div></div>
+      </div>
+      <div class="verdict-bar">FB 6~7배 비쌈 — 구조적</div>
+    </div>
+  </div>
+  <div class="note">* 각 칸 위 숫자는 PBM, 아래 작은 숫자는 CT. eCPM 격차 이유: FB Audience Network는 글로벌(특히 미국) 광고 수요가 붙는 프리미엄 네트워크, 토스는 한국 단일시장 + 자체 미디에이션이라 단가가 낮다.</div>
+
+  <div class="gaprow">
+    <div class="gapcard">
+      <div class="g-lab">PBM 월매출 격차</div>
+      <div class="g-big">15배 ↓</div>
+      <div class="g-sub">토스 $3.3K vs FB $50K</div>
+      <div class="g-decomp">= DAU 3.7배 × ARPDAU 3.6배<br>(ARPDAU 3.6배 = eCPM 6.9배 ÷ 노출 1.9배)</div>
+    </div>
+    <div class="gapcard">
+      <div class="g-lab">CT 월매출 격차</div>
+      <div class="g-big">161배 ↓</div>
+      <div class="g-sub">토스 $0.4K vs FB $67.5K</div>
+      <div class="g-decomp">= DAU 58배 × ARPDAU 2.7배<br>거의 전부 <b>규모</b> 문제</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PART 3: 토스 eCPM은 왜 낮은가 ===== -->
+<section>
+  <div class="part">Part 3 · 토스 eCPM은 왜 낮은가</div>
+  <h2>답은 "시장(geo)" — 토스 탓이 아니다</h2>
+  <div class="summary">
+    <span class="tag">요약</span>
+    <p>eCPM은 <b>어느 나라 유저에게 파느냐</b>가 좌우한다. FB는 매출의 <b>60~78%를 미국</b>에서 벌지만, 토스는 <b>100% 한국 · 미국 유저 0명</b>이다. 토스가 광고를 싸게 파는 게 아니라, <b>한국이 이 장르에서 저단가 시장</b>일 뿐이다.</p>
+  </div>
+
+  <h4 style="font-size:13px;margin:6px 0 4px;font-weight:800">FB 국가별 RV eCPM 사다리 — 토스는 어디쯤?</h4>
+  <div class="legend"><span><i class="toss"></i>토스 (한국)</span><span><i class="fb"></i>FB 국가별</span><span>※ 같은 척도(USD)</span></div>
+  <div class="bars">
+    <div class="barblock">
+      <h4>PBM</h4>
+      <div class="barrow"><div class="nm">🇺🇸 US</div><div class="track"><div class="fill fb" style="width:92%"></div></div><div class="val">$36.7</div></div>
+      <div class="barrow"><div class="nm">🇬🇧 GB</div><div class="track"><div class="fill fb" style="width:67%"></div></div><div class="val">$26.7</div></div>
+      <div class="barrow"><div class="nm">🇨🇦 CA</div><div class="track"><div class="fill fb" style="width:49%"></div></div><div class="val">$19.8</div></div>
+      <div class="barrow"><div class="nm">🇩🇪 DE</div><div class="track"><div class="fill fb" style="width:27%"></div></div><div class="val">$10.7</div></div>
+      <div class="barrow"><div class="nm">🇧🇷 BR</div><div class="track"><div class="fill fb" style="width:12%"></div></div><div class="val">$4.8</div></div>
+      <div class="barrow"><div class="nm" style="color:var(--toss);font-weight:800">토스</div><div class="track"><div class="fill toss" style="width:11%"></div></div><div class="val" style="color:var(--toss)">$4.3</div></div>
+      <div class="barrow"><div class="nm">🇮🇳 IN</div><div class="track"><div class="fill fb" style="width:4.5%"></div></div><div class="val">$1.8</div></div>
+    </div>
+    <div class="barblock">
+      <h4>Cozy Tiles</h4>
+      <div class="barrow"><div class="nm">🇺🇸 US</div><div class="track"><div class="fill fb" style="width:79%"></div></div><div class="val">$31.4</div></div>
+      <div class="barrow"><div class="nm">🇬🇧 GB</div><div class="track"><div class="fill fb" style="width:53%"></div></div><div class="val">$21.3</div></div>
+      <div class="barrow"><div class="nm">🇨🇦 CA</div><div class="track"><div class="fill fb" style="width:43%"></div></div><div class="val">$17.3</div></div>
+      <div class="barrow"><div class="nm">🇫🇷 FR</div><div class="track"><div class="fill fb" style="width:17%"></div></div><div class="val">$6.6</div></div>
+      <div class="barrow"><div class="nm">🇵🇭 PH</div><div class="track"><div class="fill fb" style="width:10%"></div></div><div class="val">$3.9</div></div>
+      <div class="barrow"><div class="nm" style="color:var(--toss);font-weight:800">토스</div><div class="track"><div class="fill toss" style="width:8.4%"></div></div><div class="val" style="color:var(--toss)">$3.4</div></div>
+      <div class="barrow"><div class="nm">🇦🇷 AR</div><div class="track"><div class="fill fb" style="width:5.4%"></div></div><div class="val">$2.1</div></div>
+    </div>
+  </div>
+  <div class="note">RV(보상형) eCPM 기준. 토스는 FB의 미국($31~37)이 아니라 <b>신흥시장 하단</b>에 위치 — PBM은 브라질, CT는 필리핀 근처.</div>
+
+  <h4 style="font-size:13px;margin:22px 0 4px;font-weight:800">토스 eCPM ≈ FB의 어느 시장?</h4>
+  <table>
+    <thead><tr><th></th><th>토스 eCPM</th><th>비슷한 FB 국가</th><th>FB 미국</th></tr></thead>
+    <tbody>
+      <tr><td class="metric">PBM (블렌디드)</td><td class="toss">$2.60</td><td>🇧🇷 브라질 $3.01 · 🇮🇹 이탈리아 $2.71</td><td class="fb">$23.74</td></tr>
+      <tr><td class="metric">CT (블렌디드)</td><td class="toss">$1.21</td><td>🇵🇭 필리핀 $1.34 · 🇹🇭 태국 $1.02</td><td class="fb">$13.76</td></tr>
+    </tbody>
+  </table>
+
+  <div class="myth" style="border-left-color:var(--good);margin-top:18px">
+    <div class="q" style="color:var(--good)">✓ 결정적 근거 — FB의 한국 유저도 토스와 똑같이 싸다</div>
+    <div class="a">FB엔 이 게임 한국 유저가 거의 없지만(노출 0.045%), 그 극소 표본의 <b>FB 한국 eCPM이 PBM $2.59 ≈ 토스 $2.60</b>으로 거의 일치한다. 즉 한국 인벤토리는 FB든 토스든 비슷한 단가 → <b>토스가 싸게 파는 게 아니라 한국 시장 천장이 낮은 것.</b> <span style="color:var(--mut)">(KR 표본 작아 방향성 근거.)</span></div>
+  </div>
+
+  <div class="note" style="margin-top:16px">
+    <b>요인 정리 (영향 순):</b> ① <b>지역(geo)</b> — 한국 단일시장, 미국 수요 접근 불가(최대). ② <b>장르</b> — CT는 양 플랫폼 모두 PBM보다 저단가(저수익 오디언스). ③ <b>광고 유형 믹스</b> — 토스 배너 비중 42~48%로 높음(배너 최저단가), 단 유형별 격차도 ~6배라 주범 아님. → <b>미디에이션 최적화로 한국 천장(≈브라질·필리핀급)까진 가능해도, FB 미국 단가는 구조적으로 불가능.</b></div>
+</section>
+
+<!-- ===== Part 3 보충: 같은 eCPM 국가와 매출 비교 ===== -->
+<section>
+  <div class="part">Part 3 보충 · 같은 eCPM 국가와 비교</div>
+  <h2>단가가 같으면 결국 "유저 수(DAU)" 싸움 — 인당 노출은 토스가 더 높다</h2>
+  <div class="summary">
+    <span class="tag">요약</span>
+    <p>eCPM이 비슷한 FB 국가와 맞대보면, 매출 차이는 <b>유저 수(DAU)</b>에서 갈린다. <b>인당 광고 노출은 토스가 모든 비교 국가보다 높다</b>(강점). PBM 토스는 유저가 많아 압도, CT 토스는 필리핀보다 유저가 8배 적어 진다.</p>
+  </div>
+
+  <table>
+    <thead><tr><th>같은 eCPM 티어</th><th>eCPM</th><th>일 DAU</th><th>인당노출/일</th><th>월 매출</th></tr></thead>
+    <tbody>
+      <tr><td class="metric" style="color:var(--toss)">PBM 토스 (한국)</td><td class="fb">$2.60</td><td class="toss">2,800</td><td class="toss">16.0</td><td class="toss">$3,309</td></tr>
+      <tr><td class="metric">🇧🇷 FB 브라질</td><td class="fb">$3.01</td><td class="fb">90</td><td class="fb">9.7</td><td class="fb">$82</td></tr>
+      <tr><td class="metric">🇮🇹 FB 이탈리아</td><td class="fb">$2.71</td><td class="fb">38</td><td class="fb">13.8</td><td class="fb">$44</td></tr>
+      <tr><td class="metric" style="color:var(--toss)">CT 토스 (한국)</td><td class="fb">$1.21</td><td class="toss">520</td><td class="toss">22.0</td><td class="toss">$418</td></tr>
+      <tr><td class="metric">🇵🇭 FB 필리핀</td><td class="fb">$1.34</td><td class="fb">4,339</td><td class="fb">9.8</td><td class="fb">$1,782</td></tr>
+      <tr><td class="metric">🇹🇭 FB 태국</td><td class="fb">$1.02</td><td class="fb">121</td><td class="fb">17.2</td><td class="fb">$63</td></tr>
+    </tbody>
+  </table>
+  <div class="note">파란 셀 = 토스 우위. <b>인당노출/일은 토스가 6칸 중 최상위</b>(16·22) — 광고를 적게 띄워서 지는 게 아니다. 매출 차이는 전적으로 <b>DAU(유저 수)</b>에서 나온다.</div>
+
+  <div class="myth" style="border-left-color:var(--good);margin-top:16px;margin-bottom:11px">
+    <div class="q" style="color:var(--good)">🟢 PBM — 유저가 많아 그 티어 최강</div>
+    <div class="a">매출 격차 51배(vs 브라질)는 <b>DAU 31배</b>(2,800 vs 90) × 인당노출 1.6배(토스 우위). → 매출이 "FB의 1/15"인 건 순전히 FB가 미국을 가져서지, <b>같은 티어에선 토스가 압도한다.</b></div>
+  </div>
+  <div class="myth">
+    <div class="q">🔴 CT — 유저가 8배 적어서 진다</div>
+    <div class="a">필리핀이 매출 4배 많은 건 <b>DAU가 8.3배</b>(4,339 vs 520)라서. 토스는 인당노출을 <b>2.25배 더</b> 띄우지만(22 vs 9.8) 유저 수 차이를 못 이긴다. → 약점은 노출이 아니라 <b>규모</b>.</div>
+  </div>
+</section>
+
+<!-- ===== 오해 정리 ===== -->
+<section>
+  <div class="part">자주 하는 오해</div>
+  <h2>"이것 때문" 아니다 — 두 가지 오해 정리</h2>
+  <div class="myth">
+    <div class="q"><span class="x">✕</span>"광고를 적게 띄워서 매출이 적은 것 아닌가?"</div>
+    <div class="a"><span class="ok">아니다.</span> 광고 로직은 멀티플랫폼 공통 코드다. 실측하면 <b>인당 노출은 오히려 토스가 1.6~2배 많다</b>(토스 16~22 vs FB 8.5~10). ad load를 더 늘릴 여지는 적다.</div>
+  </div>
+  <div class="myth">
+    <div class="q"><span class="x">✕</span>"eCPM이 너무 출렁여서 매출로 안 이어지는 것 아닌가?"</div>
+    <div class="a"><span class="ok">아니다.</span> 출렁임의 대부분은 <b>배너</b>다(PBM 배너 eCPM 변동 CV 43%, 노출의 42%인데 매출은 17%뿐인 저수익 인벤토리). 정작 돈 버는 <b>RV·전면 eCPM은 안정적</b>(CV 10%). 문제는 단가의 <b>변동</b>이 아니라 <b>레벨</b>(FB의 1/7)이다.</div>
+  </div>
+</section>
+
+<!-- ===== 레버 ===== -->
+<section class="lever">
+  <div class="eyebrow">무엇을 해야 하나</div>
+  <h2>레버는 단가가 아니라 "규모"와 "수익 다변화"</h2>
+  <div class="lv"><div class="n">1</div><div><b>DAU 규모 키우기</b> — 유료 UA가 없어 신규 유입(NRU)이 작은 게 핵심. 유입 확대가 1순위, 보조로 CT의 D1 이후 급락(D7/D1 9%) 방어. CT는 격차가 거의 전부 규모(58배)라 답이 여기 있다.</div></div>
+  <div class="lv"><div class="n">2</div><div><b>IAP 도입</b> — 토스는 인앱결제가 사실상 0. 광고 외 수익 다리를 만들어야 한다.</div></div>
+  <div class="lv"><div class="n">3</div><div><b>eCPM 최적화는 보조</b> — 미디에이션 플로어·바이더 추가로 일부 개선은 가능하나, 한국 단일시장 한계상 FB 대비 6~7배 갭은 못 메운다.</div></div>
+  <div class="muted">✕ 광고 노출 증설은 답이 아니다 — 이미 FB보다 많이 띄우고 있다.</div>
+</section>
+
+<!-- ===== 부록 ===== -->
+<details>
+  <summary>부록 A — eCPM 광고 유형별 상세 (RV / 전면 / 배너)</summary>
+  <div class="det-body">
+    <p class="note">토스 대시보드 원본(<code>토스 eCPM_0602.xlsx</code>). 시트 매출(₩)은 RV+전면+배너 합과 99% 일치 검증. CV = 변동계수(높을수록 단가가 들쭉날쭉).</p>
+    <table>
+      <thead><tr><th>광고 유형</th>
+        <th class="colgrp-pbm">PBM eCPM</th><th class="colgrp-pbm">PBM CV</th>
+        <th class="colgrp-ct">CT eCPM</th><th class="colgrp-ct">CT CV</th>
+        <th>노출비중<br>PBM/CT</th><th>매출비중<br>PBM/CT</th></tr></thead>
+      <tbody>
+        <tr><td class="metric">RV (보상형)</td><td>₩5,933</td><td>11.7%</td><td>₩4,589</td><td>22.4%</td><td>19% / 12%</td><td>35% / 32%</td></tr>
+        <tr><td class="metric">전면 (Interstitial)</td><td>₩4,113</td><td>12.1%</td><td>₩2,638</td><td>16.8%</td><td>38% / 40%</td><td>48% / 64%</td></tr>
+        <tr><td class="metric" style="color:var(--warn)">배너</td><td>₩1,865</td><td style="color:var(--bad);font-weight:800">43.4%</td><td>₩136</td><td>22.8%</td><td>42% / 48%</td><td>17% / 4%</td></tr>
+        <tr><td class="metric">블렌디드 (배너 포함)</td><td>₩3,558</td><td>24.8%</td><td>₩1,659</td><td>15.5%</td><td>100%</td><td>100%</td></tr>
+        <tr><td class="metric"><b>고가치 (RV+전면)</b></td><td><b>₩4,725</b></td><td><b>10.2%</b></td><td><b>₩3,076</b></td><td>15.8%</td><td>—</td><td>83% / 96%</td></tr>
+      </tbody>
+    </table>
+    <p class="note"><b>읽는 법:</b> 배너는 노출의 42~48%를 차지하지만 매출은 17%/4%뿐이고 단가 변동(CV 43%)이 가장 크다 → "eCPM이 출렁인다"는 체감은 배너 탓. 돈 버는 RV+전면은 단가가 안정적(CV 10%)이라, 토스 안에서는 노출이 늘면 매출도 비례해 늘어난다(corr 0.95). 단, 단가 <b>레벨</b>이 FB의 1/7이라 절대 매출은 작다.</p>
+  </div>
+</details>
+
+<details>
+  <summary>부록 B — 분석 방법 · 정의 · 한계</summary>
+  <div class="det-body">
+    <footer style="margin-top:0">
+      <ul>
+        <li><b>오가닉 정의</b> — 토스: <code>entrypoint_join.entry='organic_store'</code>. Facebook: <code>payload.social IS NULL AND entry≠'ad'</code> (stat <code>Session-by-social-organic</code> NRU와 99.99% 일치 검증).</li>
+        <li><b>퀄리티 코호트</b> — 2026-05-12~25 가입 NRU(<code>logincount_total=1</code>), 관찰 ~06-01. D0 지표는 가입 첫날 일일 카운터 최댓값, 리텐션은 join_date+1/+7 활동 여부.</li>
+        <li><b>인당 노출(imps/DAU)</b> — 양 플랫폼 raw에서 동일 이벤트(<code>4210_RV_FINISH</code>·<code>4010_INTERSTITIAL_AD_FINISH</code>·<code>4310_BANNER_AD_FINISH</code>) 5월 집계 ÷ 일 DAU. 추정 아닌 실측.</li>
+        <li><b>매출·eCPM</b> — 토스 매출: gameteam 시트(₩) + 토스 대시보드. FB 매출/eCPM: <code>supergene-common.analytics_common.tb_src_fb_ad_revenue_app_*_v2</code>(fb_ad_network_revenue ÷ fb_ad_network_imp). 환율 ₩1,370/$.</li>
+        <li><b>한계</b> — 누적 지표는 우측 절단(늦은 가입자 관찰기간 짧음)으로 방향성 참고용. CT 토스 코호트 448명 소표본. FB 매출은 유료 UA 비용이 든 gross, 토스는 순수 오가닉(ROAS 관점에선 토스 불리하지 않음 — 여기선 절대 매출 비교). FB DAU는 유료 포함 전체.</li>
+      </ul>
+      <p style="margin-top:12px;color:#9aa1ad">생성 2026-06-02 · 데이터 출처 game-log-359704 · supergene-common · 작성 Claude Code</p>
+    </footer>
+  </div>
+</details>
+
+</div>
+</body>
+</html>
